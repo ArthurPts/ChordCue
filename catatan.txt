@@ -1,0 +1,27 @@
+project menggunakan laravel 12, mysql, pest, kit starter: none, breeze, breeze stack: blade (blade with alpine), edge-tts.
+
+command penting yang mungkin berguna :
+php artisan queue:work --verbose
+
+php artisan tinker
+Illuminate\Support\Facades\Bus::dispatch(new App\Jobs\GenerateChordAudioJob('B minor', 'en-US-AriaNeural'));
+
+collect(['C major', 'D major', 'A minor', 'G major'])->each(
+    fn ($t) => Illuminate\Support\Facades\Bus::dispatch(
+        new App\Jobs\GenerateChordAudioJob($t, 'en-US-AriaNeural')
+    )
+);
+
+copy .env.example .env
+composer install
+php artisan key:generate
+php artisan storage:link
+
+pip install edge-tts 
+##atau## 
+py -m pip install edge-tts
+##atau## jika ada error 
+py -m pip install --upgrade edge-tts
+
+npm install
+npm run build  "npm run dev" 
