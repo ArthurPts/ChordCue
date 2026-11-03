@@ -20,7 +20,8 @@ class Song extends Model
         'bpm',
         'time_signature_numerator',
         'time_signature_denominator',
-        'file_path',
+        'backing_track_path',
+        'backing_track_offset',
         'visibility',
     ];
 
@@ -30,6 +31,7 @@ class Song extends Model
             'bpm' => 'integer',
             'time_signature_numerator' => 'integer',
             'time_signature_denominator' => 'integer',
+            'backing_track_offset' => 'decimal:3',
         ];
     }
 

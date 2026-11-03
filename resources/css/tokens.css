@@ -1,0 +1,126 @@
+/* ==========================================================
+ * Dark Blue Design Tokens - Music Companion
+ * Keep in sync with tokens.json (same names, same values). Change both together.
+ * [original] = from source HTML | [derived] = added or improved here
+ * Deskripsi singkat (Indonesia) ada di komentar tiap token.
+ * Font: system font stack, no font files to load.
+ * ========================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* --- COLOR --- */
+  --color-bg-base: #0A0F1A; /* [original] Latar halaman utama (60%). */
+  --color-surface-1: #111826; /* [original] Kartu, navbar, panel default. */
+  --color-surface-2: #182133; /* [original] Kartu hover, panel terangkat, dialog. */
+  --color-surface-3: #212C42; /* [original] Field input, avatar, tooltip, elemen paling terangkat. */
+  --color-overlay: rgba(10, 15, 26, 0.72); /* [derived] Scrim di belakang dialog. Pengganti bayangan. */
+  --color-border-subtle: #2A3752; /* [original] Semua garis tepi, pemisah, dan track toggle off. */
+  --color-accent-primary: #5B8DEF; /* [original] Aksi utama, tab aktif, ikon brand, toggle on. Sebagai teks: hanya di bg-base/surface-1/surface-2. */
+  --color-accent-hover: #7AA2F7; /* [original] Hover/pressed aksen utama; ring fokus. */
+  --color-accent-soft-bg: #1B2A4A; /* [original] Latar chip/badge bernuansa aksen. */
+  --color-accent-soft-text: #A9C4FF; /* [original] Teks/ikon di atas accent-soft-bg dan surface-3. */
+  --color-on-accent: #0A0F1A; /* [derived] Teks/ikon di atas accent-primary. */
+  --color-text-primary: #E8EEF9; /* [original] Judul, teks utama. */
+  --color-text-secondary: #A3AEC4; /* [original] Teks pendukung, nav tidak aktif, ikon netral. */
+  --color-text-tertiary: #8A95AB; /* [derived] Placeholder, caption, hint. Dinaikkan dari #7A869F agar lolos AA (>=4.5:1) di semua surface. */
+  --color-text-disabled: #465068; /* [original] Elemen nonaktif (dikecualikan dari aturan kontras). */
+  --color-success: #5CC8A1; /* [original] Berhasil, selesai. */
+  --color-warning: #E0B25B; /* [original] Peringatan, perlu perhatian. */
+  --color-error: #E5766E; /* [original] Error, aksi destruktif. */
+  --color-success-tint: #1A2D35; /* [derived] Latar alert sukses (12% success di atas surface-1). */
+  --color-warning-tint: #2A2A2C; /* [derived] Latar alert peringatan (12% warning di atas surface-1). */
+  --color-error-tint: #2A232F; /* [derived] Latar alert error (12% error di atas surface-1). */
+
+  /* --- FONT --- */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* [derived] Font UI utama: font bawaan perangkat (tanpa file font). */
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* [derived] Font kode/hex/ID (stack sistem). */
+  --font-size-caption: 12px; /* [original] Chip, label kecil, hint. */
+  --font-size-body: 13px; /* [original] Teks UI default: tombol, nav, subjudul, input. */
+  --font-size-nav-title: 14px; /* [original] Nama aplikasi di navbar. */
+  --font-size-title: 15px; /* [original] Judul kartu. */
+  --font-size-heading: 18px; /* [derived] Judul dialog / section. */
+  --font-size-display: 24px; /* [derived] Judul halaman. Maksimal satu per halaman. */
+  --font-weight-regular: 400; /* [original] Teks biasa. */
+  --font-weight-medium: 500; /* [original] Judul, tombol, item aktif. Jangan lebih berat. */
+  --line-height-base: 1.4; /* [derived] Line-height teks biasa. */
+  --line-height-heading: 1.25; /* [derived] Line-height heading dan display. */
+
+  /* --- RADIUS --- */
+  --radius-sm: 8px; /* [original] Tombol, input, icon button, tooltip, toast. */
+  --radius-md: 10px; /* [original] Navbar. */
+  --radius-lg: 12px; /* [original] Kartu, dialog. */
+  --radius-full: 999px; /* [original] Chip, toggle, progress. Avatar pakai 50%. */
+
+  /* --- SPACE --- */
+  --space-4: 4px; /* [original] Padding vertikal chip, gap kecil. */
+  --space-6: 6px; /* [original] Gap antar chip. */
+  --space-8: 8px; /* [original] Gap tombol/ikon, padding vertikal tombol. */
+  --space-10: 10px; /* [original] Padding horizontal chip. */
+  --space-12: 12px; /* [original] Gap antar kartu, padding horizontal input. */
+  --space-14: 14px; /* [original] Padding horizontal tombol. */
+  --space-16: 16px; /* [original] Padding kartu/navbar; padding halaman < 768px. */
+  --space-20: 20px; /* [original] Gap antar item navbar. */
+  --space-24: 24px; /* [derived] Padding dialog; padding halaman dari 768px; jarak antar section. */
+  --space-32: 32px; /* [derived] Padding empty state; jarak antar blok besar. */
+
+  /* --- SIZE --- */
+  --size-navbar-height: 48px; /* [original] Tinggi navbar. */
+  --size-control-height: 36px; /* [derived] Tinggi input dan tombol. */
+  --size-touch-target-min: 44px; /* [derived] Area sentuh minimum di layar sentuh. */
+  --size-icon-button: 34px; /* [original] Tombol ikon persegi. */
+  --size-avatar: 28px; /* [original] Avatar bulat. */
+  --size-toggle-width: 36px; /* [original] Lebar track toggle. */
+  --size-toggle-height: 20px; /* [original] Tinggi track toggle. */
+  --size-toggle-knob: 16px; /* [original] Diameter knob; inset 2px. */
+  --size-progress-height: 4px; /* [derived] Tinggi bar progress dan track slider. */
+  --size-dialog-width: 480px; /* [derived] Lebar maksimum dialog (lebar penuh - 32px di mobile). */
+  --size-toast-width: 360px; /* [derived] Lebar maksimum toast. */
+  --size-tooltip-max-width: 240px; /* [derived] Lebar maksimum tooltip. */
+  --size-icon-chip: 13px; /* [original] Ikon di chip. */
+  --size-icon-control: 16px; /* [original] Ikon di tombol dan input. */
+  --size-icon-button-glyph: 17px; /* [original] Ikon di icon button. */
+  --size-icon-nav: 18px; /* [original] Ikon brand di navbar. */
+  --size-slider-thumb: 14px; /* [derived] Diameter thumb slider (seek/volume). */
+
+  /* --- BORDER --- */
+  --border-width: 1px; /* [original] Ketebalan semua border. */
+  --focus-ring-width: 2px; /* [derived] Ring fokus keyboard. */
+  --focus-ring-offset: 2px; /* [derived] Jarak ring fokus. */
+
+  /* --- MOTION --- */
+  --motion-duration-fast: 120ms; /* [derived] Hover, perubahan warna, toggle. */
+  --motion-duration-base: 200ms; /* [derived] Dialog, toast, dropdown muncul. */
+  --motion-duration-slow: 320ms; /* [derived] Transisi layout besar. */
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1); /* [derived] Easing default. */
+  --motion-ease-out: cubic-bezier(0, 0, 0.2, 1); /* [derived] Elemen masuk ke layar. */
+
+  /* --- Z --- */
+  --z-base: 0; /* [derived] Konten normal. */
+  --z-sticky: 10; /* [derived] Navbar / header sticky. */
+  --z-dropdown: 20; /* [derived] Dropdown, popover, tooltip. */
+  --z-overlay: 30; /* [derived] Scrim. */
+  --z-modal: 40; /* [derived] Dialog. */
+  --z-toast: 50; /* [derived] Toast (selalu paling atas). */
+
+  /* --- BREAKPOINT --- */
+  --breakpoint-sm: 640px; /* [derived] Ponsel besar. Tulis angka langsung di @media (variabel CSS tidak berlaku di media query). */
+  --breakpoint-md: 768px; /* [derived] Tablet: padding halaman naik ke space-24, toast pindah ke kanan bawah. */
+  --breakpoint-lg: 1024px; /* [derived] Laptop kecil. */
+  --breakpoint-xl: 1280px; /* [derived] Desktop. */
+
+  /* --- LAYOUT --- */
+  --layout-content-max: 1120px; /* [derived] Lebar maksimum konten, diratakan tengah. */
+  --layout-ratio-base: 60%; /* [original] Porsi bg-base. */
+  --layout-ratio-surface: 30%; /* [original] Porsi surface-1..3. */
+  --layout-ratio-accent: 10%; /* [original] Batas maksimum aksen. */
+}
+
+/* Reduced motion: zero all durations. DESIGN.md section 4 - MUST NOT be overridden. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 0ms;
+    --motion-duration-base: 0ms;
+    --motion-duration-slow: 0ms;
+  }
+}

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('lyric_lines', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('section_id')->constrained('song_sections')->cascadeOnDelete();
+            $table->foreignId('song_section_id')->constrained('song_sections')->cascadeOnDelete();
             $table->integer('line_number');
             $table->text('content');
         });

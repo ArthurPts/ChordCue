@@ -13,7 +13,7 @@ class ChordDiagram extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'chords_id',
+        'chord_id',
         'file_path',
     ];
 
@@ -22,6 +22,6 @@ class ChordDiagram extends Model
      */
     public function chord(): BelongsTo
     {
-        return $this->belongsTo(Chord::class, 'chords_id');
+        return $this->belongsTo(Chord::class, 'chord_id');
     }
 }

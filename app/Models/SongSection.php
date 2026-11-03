@@ -39,6 +39,6 @@ class SongSection extends Model
      */
     public function lyricLines(): HasMany
     {
-        return $this->hasMany(LyricLine::class, 'section_id');
+        return $this->hasMany(LyricLine::class, 'song_section_id');
     }
 }

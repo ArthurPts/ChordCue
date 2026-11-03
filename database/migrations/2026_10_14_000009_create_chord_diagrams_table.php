@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('chord_diagrams', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('chords_id')->constrained('chords')->cascadeOnDelete();
+            $table->foreignId('chord_id')->constrained('chords')->cascadeOnDelete();
             $table->string('file_path', 255)->nullable();
         });
     }

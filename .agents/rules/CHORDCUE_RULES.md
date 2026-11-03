@@ -9,6 +9,8 @@ Pedoman wajib bagi AI Agent setiap kali membaca, membuat, atau memodifikasi kode
 1. **Sumber kebenaran** perilaku dan data adalah `SPESIFIKASI_SISTEM_ChordCue.md`. ERD dan kamus data di §6 menentukan skema database.
 2. Jika spesifikasi ambigu atau permintaan bertentangan dengannya: **tanyakan dulu**, jangan berasumsi, dan jangan mengubah spesifikasi tanpa izin.
 3. Kerjakan **sesuai permintaan saja**; jangan menambah fitur atau merombak kode di luar itu.
+4. Sumber kebenaran **tampilan** adalah `DESIGN_SYSTEM.md` (nilai token di `resources/css/tokens.css`).
+   Perilaku/data → spesifikasi. Tampilan → design system. Bila bertentangan: tanyakan dulu.
 
 ---
 
@@ -154,6 +156,15 @@ Keunikan `start_beat` (per lagu) dan `position` (per baris) ditegakkan aplikasi,
 - **Mesin audio** (metronom, count-in, penjadwal, backing track) adalah modul Vanilla JS terpisah (mis. `resources/js/audio/`) yang **tidak bergantung pada Alpine**; Alpine hanya memanggilnya.
 - Ikuti spesifikasi §7.4 dan §10.1: bunyi dijadwalkan lewat `AudioContext.currentTime`, bukan dipicu `setTimeout`/`setInterval` (timer hanya untuk lookahead); preload sebelum Play aktif; `AudioContext.resume()` dari klik Play; satu `GainNode` per sumber.
 - AJAX memakai `fetch` dengan token CSRF; bentuk respons mengikuti spesifikasi §9.
+- Warna, ukuran font, radius, dan spacing HANYA lewat utility Tailwind yang dipetakan ke token
+  (mis. `bg-surface-1`). Dilarang nilai arbitrer (`bg-[#...]`, `text-[13px]`) dan palet bawaan Tailwind (`bg-gray-800`).
+- Tema dark saja: hapus varian `dark:` dari komponen Breeze.
+- Komponen Blade Breeze (button, input, modal, dropdown, nav) BOLEH diubah class-nya agar mengikuti
+  resep `DESIGN_SYSTEM.md` §6. Hanya class, bukan logika (pengecualian dari §10 no. 10).
+- Progress dan slider: pakai `<progress>` / `<input type="range">` yang di-style di `app.css`. Dilarang `style="width:..%"`.
+- Ikon: komponen Blade `<x-icon>` berisi SVG Tabler yang disalin. Tanpa package baru.
+- Font: file `.woff2` lokal di `resources/fonts/` lewat `@font-face`. Tanpa package baru.
+
 
 ---
 
@@ -179,6 +190,7 @@ AI Agent **DILARANG KERAS**:
 8. **Menulis raw SQL dengan input pengguna tanpa binding.**
 9. **Melewati Policy** atau pemeriksaan role pada aksi tulis dan rute admin.
 10. **Mengubah kode inti Breeze** di luar penyesuaian pada bagian 4.
+11. Memakai warna/ukuran/radius di luar token, atau menambah token tanpa izin.
 
 ---
 
@@ -189,7 +201,7 @@ AI Agent **DILARANG KERAS**:
 3. **Model**: `$fillable`, `$timestamps`, relasi jelas.
 4. **Policy dan Service** bila perlu (otorisasi, algoritma §7).
 5. **Controller & Route**: logika linear, komentar alur, PHPDoc.
-6. **View (Blade + Alpine.js)** dengan komponen Breeze dan Tailwind.
+6. View (Blade + Alpine.js): cocokkan setiap elemen dengan resep `DESIGN_SYSTEM.md` §6, lalu jalankan checklist §12-nya.
 7. **Pest**: buat/perbarui tes, jalankan `php artisan test`, pastikan lulus sebelum menyatakan selesai.
 8. **Ringkas perubahan** ke pengguna: file yang dibuat/diubah dan hal yang perlu diputuskan.
 

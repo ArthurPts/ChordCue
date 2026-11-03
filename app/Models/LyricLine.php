@@ -14,7 +14,7 @@ class LyricLine extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'section_id',
+        'song_section_id',
         'line_number',
         'content',
     ];
@@ -31,7 +31,7 @@ class LyricLine extends Model
      */
     public function section(): BelongsTo
     {
-        return $this->belongsTo(SongSection::class, 'section_id');
+        return $this->belongsTo(SongSection::class, 'song_section_id');
     }
 
     /**

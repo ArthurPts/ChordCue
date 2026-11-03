@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('lyric_line_id')->constrained('lyric_lines')->cascadeOnDelete();
             $table->foreignId('chord_id')->constrained('chords')->cascadeOnDelete();
-            $table->integer('position');
-            $table->integer('start_beat');
+            $table->integer('position')->nullable();
+            $table->integer('start_beat')->nullable();
         });
     }
 
