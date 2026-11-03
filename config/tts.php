@@ -13,7 +13,7 @@ return [
      |   TTS_COMMAND="py -m edge_tts"          (Windows, Python launcher)
      | Catatan: path executable yang mengandung spasi tidak didukung; pakai "python -m edge_tts".
      */
-    'command' => array_values(array_filter(explode(' ', env('TTS_COMMAND', 'edge-tts')))),
+    'command' => array_values(array_filter(preg_split('/\s+/', trim(env('TTS_COMMAND', 'edge-tts'))))),
 
     // Daftar suara: jalankan `edge-tts --list-voices`
     // id-ID-ArdiNeural (pria) | id-ID-GadisNeural (wanita) | en-US-AriaNeural (Inggris)

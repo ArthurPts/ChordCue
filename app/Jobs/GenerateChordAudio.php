@@ -66,6 +66,7 @@ class GenerateChordAudio implements ShouldQueue
         ]);
 
         $process = new Process($command);
+        $process->setEnv($this->processEnv());
         $process->setTimeout(config('tts.timeout'));
         $process->run();
 
@@ -76,5 +77,24 @@ class GenerateChordAudio implements ShouldQueue
         }
 
         DB::table('chords')->where('id', $chord->id)->update(['file_path' => $relative]);
+    }
+
+    /**
+     * Environment variables untuk subprocess.
+     * Di Windows, asyncio/SSL butuh SystemRoot agar tidak error.
+     */
+    private function processEnv(): array
+    {
+        $env = getenv();
+
+        if (PHP_OS_FAMILY === 'Windows') {
+            $env = array_merge($env, [
+                'SystemRoot' => getenv('SystemRoot') ?: 'C:\\Windows',
+                'SYSTEMROOT' => getenv('SYSTEMROOT') ?: 'C:\\Windows',
+                'WINDIR'     => getenv('WINDIR') ?: 'C:\\Windows',
+            ]);
+        }
+
+        return $env;
     }
 }
