@@ -2,63 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Song;
 use Illuminate\Http\Request;
 
 class SongController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
+     * Tampilkan form pembuatan lagu baru.
      */
     public function create()
     {
-        //
+        return view('chords.index');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Tampilkan form edit lagu.
      */
-    public function store(Request $request)
+    public function edit(Song $song)
     {
-        //
+        // Hanya pemilik lagu atau administrator yang berhak mengedit
+        if (auth()->user()->role !== 'admin' && $song->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengedit lagu ini.');
+        }
+
+        return view('chords.index', compact('song'));
     }
 
     /**
-     * Display the specified resource.
+     * Hapus lagu beserta file backing track fisiknya.
      */
-    public function show(string $id)
+    public function destroy(Song $song)
     {
-        //
-    }
+        // Hanya pemilik lagu atau administrator yang berhak menghapus
+        if (auth()->user()->role !== 'admin' && $song->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak memiliki hak akses untuk menghapus lagu ini.');
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $song->deleteWithFiles();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return back()->with('status', 'Lagu berhasil dihapus.');
     }
 }

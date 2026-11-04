@@ -1,3 +1,85 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-base font-sans text-body font-regular text-ink;
+    }
+
+    /* Ring fokus keyboard untuk semua elemen interaktif (DESIGN_SYSTEM section 4). */
+    :focus-visible {
+        outline: var(--focus-ring-width) solid var(--color-accent-hover);
+        outline-offset: var(--focus-ring-offset);
+    }
+
+    input[type='checkbox'] {
+        accent-color: var(--color-accent-primary);
+    }
+}
+
+@layer components {
+    /* Progress (DESIGN_SYSTEM 6.9) */
+    .ui-progress {
+        @apply block h-progress w-full appearance-none overflow-hidden rounded-full border-0 bg-subtle;
+    }
+    .ui-progress::-webkit-progress-bar {
+        @apply bg-subtle;
+    }
+    .ui-progress::-webkit-progress-value {
+        @apply bg-accent;
+    }
+    .ui-progress::-moz-progress-bar {
+        @apply bg-accent;
+    }
+
+    /* Slider (DESIGN_SYSTEM 6.17): progress di bawah, input range transparan di atas. */
+    .ui-slider {
+        @apply grid w-full items-center;
+    }
+    .ui-slider > * {
+        grid-area: 1 / 1;
+    }
+    .ui-slider .ui-progress {
+        @apply pointer-events-none;
+    }
+    @media (pointer: coarse) {
+        .ui-slider {
+            @apply min-h-touch;
+        }
+    }
+    .ui-slider input[type='range'] {
+        @apply relative z-base m-0 h-slider-thumb w-full cursor-pointer appearance-none bg-transparent;
+    }
+    .ui-slider input[type='range']:focus-visible {
+        outline: none;
+    }
+    .ui-slider input[type='range']::-webkit-slider-runnable-track {
+        @apply h-slider-thumb bg-transparent;
+    }
+    .ui-slider input[type='range']::-moz-range-track {
+        @apply h-slider-thumb bg-transparent;
+    }
+    .ui-slider input[type='range']::-webkit-slider-thumb {
+        @apply h-slider-thumb w-slider-thumb appearance-none rounded-full border-0 bg-accent;
+    }
+    .ui-slider input[type='range']::-moz-range-thumb {
+        @apply h-slider-thumb w-slider-thumb rounded-full border-0 bg-accent;
+    }
+    .ui-slider input[type='range']:hover::-webkit-slider-thumb {
+        @apply bg-accent-hover;
+    }
+    .ui-slider input[type='range']:hover::-moz-range-thumb {
+        @apply bg-accent-hover;
+    }
+    .ui-slider input[type='range']:focus-visible::-webkit-slider-thumb {
+        outline: var(--focus-ring-width) solid var(--color-accent-hover);
+        outline-offset: var(--focus-ring-offset);
+    }
+    .ui-slider input[type='range']:focus-visible::-moz-range-thumb {
+        outline: var(--focus-ring-width) solid var(--color-accent-hover);
+        outline-offset: var(--focus-ring-offset);
+    }
+}

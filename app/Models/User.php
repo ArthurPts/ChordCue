@@ -51,6 +51,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Menghapus user beserta seluruh lagu dan file fisiknya secara eksplisit.
+     *
+     * Fungsi ini digunakan pada:
+     * - ProfileController::destroy()
+     * - UserController::destroy() (Admin)
+     */
+    public function deleteWithSongs(): void
+    {
+        foreach ($this->songs as $song) {
+            $song->deleteWithFiles();
+        }
+
+        $this->delete();
+    }
+
+    /**
      * Relasi ke model Song (One to Many).
      */
     public function songs(): HasMany

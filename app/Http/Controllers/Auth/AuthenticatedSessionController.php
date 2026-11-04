@@ -12,7 +12,10 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Menampilkan halaman login untuk pengunjung.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: GET /login (auth.php)
      */
     public function create(): View
     {
@@ -20,28 +23,38 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Memproses autentikasi login pengguna menggunakan email dan password.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: POST /login (auth.php)
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // 1. Otorisasi & Validasi Input
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // 2. Response / Render View
+        return redirect()->intended(route('home', absolute: false));
     }
 
     /**
-     * Destroy an authenticated session.
+     * Menghapus sesi autentikasi pengguna (logout).
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: POST /logout (auth.php)
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // 1. Otorisasi & Validasi Input
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
+        // 2. Response / Render View
         return redirect('/');
     }
 }

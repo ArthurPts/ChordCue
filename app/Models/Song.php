@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Song extends Model
 {
@@ -33,6 +34,22 @@ class Song extends Model
             'time_signature_denominator' => 'integer',
             'backing_track_offset' => 'decimal:3',
         ];
+    }
+
+    /**
+     * Menghapus record lagu beserta file backing track fisiknya.
+     *
+     * Fungsi ini digunakan pada:
+     * - SongController::destroy()
+     * - User::deleteWithSongs()
+     */
+    public function deleteWithFiles(): void
+    {
+        if ($this->backing_track_path && Storage::disk('public')->exists($this->backing_track_path)) {
+            Storage::disk('public')->delete($this->backing_track_path);
+        }
+
+        $this->delete();
     }
 
     /**

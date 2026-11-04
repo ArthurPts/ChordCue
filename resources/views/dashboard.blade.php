@@ -1,15 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
+        <h2 class="font-medium text-lg text-ink">
+            Dashboard
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
+    <div class="py-24">
+        <div class="max-w-content mx-auto px-16 md:px-24">
+            <div class="bg-surface-1 border border-subtle overflow-hidden rounded-xl p-24">
+                <div class="text-body text-ink">
+                    Anda telah berhasil masuk ke ChordCue!
                 </div>
             </div>
         </div>

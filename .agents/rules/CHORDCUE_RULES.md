@@ -164,6 +164,7 @@ Keunikan `start_beat` (per lagu) dan `position` (per baris) ditegakkan aplikasi,
 - Progress dan slider: pakai `<progress>` / `<input type="range">` yang di-style di `app.css`. Dilarang `style="width:..%"`.
 - Ikon: komponen Blade `<x-icon>` berisi SVG Tabler yang disalin. Tanpa package baru.
 - Font: file `.woff2` lokal di `resources/fonts/` lewat `@font-face`. Tanpa package baru.
+- **Bahasa Teks Antarmuka (UI)**: Seluruh teks antarmuka ditulis langsung dalam Bahasa Indonesia di view Blade (mis. `Masuk`, `Daftar`, `Simpan`). Dilarang menggunakan fungsi lokalisasi/translasi `{{ __('...') }}` atau `__()` karena aplikasi hanya berfokus pada Bahasa Indonesia.
 
 
 ---
@@ -191,6 +192,7 @@ AI Agent **DILARANG KERAS**:
 9. **Melewati Policy** atau pemeriksaan role pada aksi tulis dan rute admin.
 10. **Mengubah kode inti Breeze** di luar penyesuaian pada bagian 4.
 11. Memakai warna/ukuran/radius di luar token, atau menambah token tanpa izin.
+12. **Memakai fungsi lokalisasi/translasi `{{ __('...') }}` atau `__()` di Blade.** Tuliskan teks antarmuka langsung dalam Bahasa Indonesia.
 
 ---
 

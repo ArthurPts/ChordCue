@@ -12,49 +12,66 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Menampilkan halaman formulir profil pengguna.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: GET /profile (web.php)
      */
     public function edit(Request $request): View
     {
+        // 1. Otorisasi & Ambil Data
+        $user = $request->user();
+
+        // 2. Response / Render View
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
     /**
-     * Update the user's profile information.
+     * Memperbarui informasi profil pengguna (username dan email).
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: PATCH /profile (web.php)
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        // 1. Otorisasi & Validasi Input
+        $user = $request->user();
+        $validatedData = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        // 2. Query Database
+        $user->fill($validatedData);
+        $user->save();
 
-        $request->user()->save();
-
+        // 3. Response / Render View
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * Menghapus akun pengguna beserta seluruh lagu miliknya.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: DELETE /profile (web.php)
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // 1. Otorisasi & Validasi Input
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
 
+        // 2. Query Database & Bersihkan Relasi
         Auth::logout();
 
-        $user->delete();
+        $user->deleteWithSongs();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // 3. Response / Render View
         return Redirect::to('/');
     }
 }

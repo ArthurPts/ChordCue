@@ -10,13 +10,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Menampilkan form registrasi pengguna baru.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: GET /register (auth.php)
      */
     public function create(): View
     {
@@ -24,28 +26,34 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
+     * Memproses pendaftaran pengguna baru dengan validasi username dan email.
      *
-     * @throws ValidationException
+     * Fungsi ini digunakan pada:
+     * - Route: POST /register (auth.php)
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+        // 1. Otorisasi & Validasi Input
+        $validatedInput = $request->validate([
+            'username' => ['required', 'string', 'max:120', 'alpha_dash', 'unique:'.User::class],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // 2. Query Database
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'username' => $validatedInput['username'],
+            'email' => $validatedInput['email'],
+            'password' => Hash::make($validatedInput['password']),
+            'role' => 'user',
+            'song_limit' => 5,
         ]);
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // 3. Response / Render View
+        return redirect()->intended(route('home', absolute: false));
     }
 }

@@ -1,4 +1,4 @@
-# Walkthrough: Pembuatan Migrations, Models, Controllers & Template Aturan ChordCue
+# Walkthrough: Pembuatan Migrations, Models, Controllers
 
 Seluruh berkas database migrations, Eloquent models, resource controllers, dan dokumen aturan pengembangan telah berhasil dibuat dan diverifikasi untuk repositori **ChordCue** (Laravel 12).
 
