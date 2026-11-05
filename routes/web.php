@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SongController;
 use App\Http\Controllers\UserController;
@@ -60,9 +61,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 // Pustaka Chord (Dapat diakses Guest & Auth)
-Route::get('/chords', function () {
-    return view('chords.index');
-})->name('chords.index');
+Route::get('/chords', [ChordController::class, 'index'])->name('chords.index');
 
 Route::middleware('auth')->group(function () {
     // Profil Pengguna
@@ -94,10 +93,18 @@ Route::middleware('auth')->group(function () {
 
         $songs = $query->latest('id')->paginate(6)->withQueryString();
 
-        return view('my-songs', compact('songs', 'visibility', 'hasAnySongs'));
+        $artists = Artist::orderBy('name')->get();
+
+        return view('my-songs', compact('songs', 'visibility', 'hasAnySongs', 'artists'));
     })->name('my.songs');
 
+    // Chord Actions (Admin Only)
+    Route::post('/chords', [ChordController::class, 'store'])->name('chords.store');
+    Route::put('/chords/{chord}', [ChordController::class, 'update'])->name('chords.update');
+    Route::delete('/chords/{chord}', [ChordController::class, 'destroy'])->name('chords.destroy');
+
     // Song Actions
+    Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
     Route::get('/songs/create', [SongController::class, 'create'])->name('songs.create');
     Route::get('/songs/{song}/edit', [SongController::class, 'edit'])->name('songs.edit');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');

@@ -13,6 +13,8 @@ export default {
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
+            black: '#000000',
+            white: '#ffffff',
             base: 'var(--color-bg-base)',
             'surface-1': 'var(--color-surface-1)',
             'surface-2': 'var(--color-surface-2)',
