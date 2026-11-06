@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChordCue Player — Opsi B (Top Control Console & Tape HUD)</title>
+    <style>
+        :root {
+            --bg-base: #080C14;
+            --surface-1: #0F1624;
+            --surface-2: #162032;
+            --surface-3: #1E2B42;
+            --border-subtle: #24324D;
+            --accent: #5B8DEF;
+            --accent-glow: rgba(91, 141, 239, 0.25);
+            --ink: #F0F4FC;
+            --ink-secondary: #9AA7C2;
+            --ink-muted: #586785;
+            --ink-dim: #323D52;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--ink);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Unified Top Hardware Console (Sticky Top) */
+        .top-master-console {
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        /* Row 1: Nav, Song Info & Meta Badges */
+        .hud-row-meta {
+            padding: 12px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(36, 50, 77, 0.6);
+        }
+
+        .hud-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-icon-back {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            color: var(--ink-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-icon-back:hover { color: var(--ink); background: var(--surface-3); }
+
+        .song-title-group h1 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            line-height: 1.1;
+        }
+        .song-title-group p {
+            font-size: 12px;
+            color: var(--ink-secondary);
+            font-weight: 500;
+        }
+
+        .hud-meta-right {
+            display: flex;
+            gap: 8px;
+        }
+        .hud-badge {
+            font-size: 11px;
+            font-family: var(--font-mono);
+            padding: 4px 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--ink-secondary);
+        }
+        .hud-badge strong { color: var(--ink); font-weight: 700; }
+
+        /* Row 2: Transport & Rehearsal Control Deck */
+        .hud-row-controls {
+            padding: 12px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            background: rgba(15, 22, 36, 0.95);
+            backdrop-filter: blur(8px);
+        }
+
+        .ctrl-group-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Big Play/Stop Trigger */
+        .btn-big-trigger {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #080C14;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 12px var(--accent-glow);
+            transition: transform 0.15s;
+        }
+        .btn-big-trigger:hover { transform: scale(1.03); }
+
+        /* Metronome Beat Tape Indicator */
+        .meter-box {
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .meter-tag {
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: var(--ink-muted);
+        }
+        .meter-number {
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--ink);
+            font-variant-numeric: tabular-nums;
+        }
+        .meter-sub {
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        /* 4-Beat LED Strip */
+        .led-bar {
+            display: flex;
+            gap: 5px;
+            background: var(--bg-base);
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        .led-cell {
+            width: 12px;
+            height: 20px;
+            border-radius: 3px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--ink-muted);
+            transition: all 0.1s ease;
+        }
+        .led-cell.pulse {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #080C14;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Steppers & Knobs */
+        .ctrl-group-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .dial-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 3px;
+            height: 42px;
+        }
+        .dial-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 6px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            color: var(--ink);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .dial-btn:hover { background: var(--surface-3); }
+        .dial-readout {
+            min-width: 80px;
+            text-align: center;
+            padding: 0 8px;
+        }
+        .dial-number {
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--ink);
+        }
+        .dial-sub {
+            font-size: 8px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: var(--ink-muted);
+        }
+
+        /* Multi-Track Mute Buttons */
+        .ctrl-group-right {
+            display: flex;
+            gap: 6px;
+        }
+        .toggle-switch {
+            padding: 6px 12px;
+            height: 42px;
+            border-radius: 8px;
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            color: var(--ink-secondary);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .toggle-switch.armed {
+            background: rgba(91, 141, 239, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .toggle-switch .indicator {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--ink-dim);
+        }
+        .toggle-switch.armed .indicator {
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+        }
+
+        /* Full-Bleed Music Stand Sheet (Clean Bottom) */
+        .stage-canvas {
+            max-width: 960px;
+            width: 100%;
+            margin: 32px auto 80px auto;
+            padding: 0 24px;
+            flex: 1;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 36px 0 20px 0;
+        }
+        .section-header:first-child { margin-top: 0; }
+        .section-name {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: rgba(91, 141, 239, 0.1);
+            border: 1px solid rgba(91, 141, 239, 0.25);
+            padding: 4px 12px;
+            border-radius: 6px;
+        }
+        .section-rule {
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        /* Lyric & Chord Rhythm Row */
+        .stage-line {
+            display: flex;
+            flex-wrap: wrap;
+            row-gap: 28px;
+            column-gap: 24px;
+            margin-bottom: 32px;
+            font-size: 18px;
+            letter-spacing: -0.01em;
+        }
+
+        .stage-unit {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: top;
+        }
+
+        .stage-chord {
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: fit-content;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        /* 3 States: High-Visibility Contrast */
+        .stage-chord.upcoming {
+            color: var(--ink);
+            background: var(--surface-1);
+            border: 1px solid var(--border-subtle);
+        }
+        .stage-chord.active-now {
+            color: #080C14;
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .stage-chord.passed {
+            color: var(--ink-dim);
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .stage-lyric {
+            color: var(--ink);
+            font-weight: 400;
+            line-height: 1.3;
+        }
+        .stage-chord.passed + .stage-lyric {
+            color: var(--ink-muted);
+        }
+        .stage-chord.active-now + .stage-lyric {
+            color: var(--ink);
+            font-weight: 550;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Responsive Mobile 375px */
+        @media (max-width: 768px) {
+            .hud-row-meta { padding: 10px 14px; }
+            .hud-meta-right { display: none; }
+            .hud-row-controls {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px 14px;
+            }
+            .ctrl-group-left, .ctrl-group-center, .ctrl-group-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .stage-canvas { padding: 0 12px; margin: 16px auto; }
+            .stage-line { font-size: 16px; row-gap: 20px; column-gap: 14px; }
+            .stage-chord { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Master Top Console -->
+    <header class="top-master-console">
+        <!-- Top Row: Song Metadata & Back Link -->
+        <div class="hud-row-meta">
+            <div class="hud-brand">
+                <a href="#" class="btn-icon-back" title="Kembali ke Daftar Lagu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </a>
+                <div class="song-title-group">
+                    <h1>24K Magic</h1>
+                    <p>Bruno Mars</p>
+                </div>
+            </div>
+
+            <div class="hud-meta-right">
+                <span class="hud-badge">KEY <strong>Fm</strong></span>
+                <span class="hud-badge">TIME <strong>4/4</strong></span>
+                <span class="hud-badge">BPM <strong>80</strong></span>
+            </div>
+        </div>
+
+        <!-- Second Row: All Rehearsal & Play Controls -->
+        <div class="hud-row-controls">
+            <!-- Left: Play/Stop + Metronome LEDs -->
+            <div class="ctrl-group-left">
+                <button class="btn-big-trigger" aria-label="Play/Stop">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+
+                <div class="meter-box">
+                    <span class="meter-tag">Bar</span>
+                    <span class="meter-number">04</span>
+                    <span class="meter-sub">Beat 2</span>
+                </div>
+
+                <div class="led-bar">
+                    <span class="led-cell">1</span>
+                    <span class="led-cell pulse">2</span>
+                    <span class="led-cell">3</span>
+                    <span class="led-cell">4</span>
+                </div>
+            </div>
+
+            <!-- Center: Session Tempo & Transpose Dials -->
+            <div class="ctrl-group-center">
+                <div class="dial-box">
+                    <button class="dial-btn" title="Kurang tempo">−</button>
+                    <div class="dial-readout">
+                        <div class="dial-number">80</div>
+                        <div class="dial-sub">Session BPM</div>
+                    </div>
+                    <button class="dial-btn" title="Tambah tempo">+</button>
+                </div>
+
+                <div class="dial-box">
+                    <button class="dial-btn" title="Turun 1 semitone">−</button>
+                    <div class="dial-readout">
+                        <div class="dial-number">0</div>
+                        <div class="dial-sub">Transpose</div>
+                    </div>
+                    <button class="dial-btn" title="Naik 1 semitone">+</button>
+                </div>
+            </div>
+
+            <!-- Right: Track Mute Switches -->
+            <div class="ctrl-group-right">
+                <button class="toggle-switch armed">
+                    <span class="indicator"></span>
+                    <span>METRONOME</span>
+                </button>
+                <button class="toggle-switch armed">
+                    <span class="indicator"></span>
+                    <span>CHORD CUE</span>
+                </button>
+                <button class="toggle-switch armed">
+                    <span class="indicator"></span>
+                    <span>BACKING</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Full-Bleed Music Stand Canvas (Nothing at the bottom to obstruct reading) -->
+    <main class="stage-canvas">
+        <div class="section-header">
+            <span class="section-name">Intro</span>
+            <div class="section-rule"></div>
+        </div>
+        <div class="stage-line">
+            <div class="stage-unit">
+                <span class="stage-chord passed">Fm7</span>
+                <span class="stage-lyric">Tonight, </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord passed">Bbm7</span>
+                <span class="stage-lyric">I just wanna take </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord passed">Eb7</span>
+                <span class="stage-lyric">that ride </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord passed">Abmaj7</span>
+                <span class="stage-lyric">with you</span>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <span class="section-name">Verse 1</span>
+            <div class="section-rule"></div>
+        </div>
+        <div class="stage-line">
+            <div class="stage-unit">
+                <span class="stage-chord active-now">Dbmaj7</span>
+                <span class="stage-lyric">Players, put yo' </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">C7</span>
+                <span class="stage-lyric">pinky rings up </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">Fm7</span>
+                <span class="stage-lyric">to the moon</span>
+            </div>
+        </div>
+
+        <div class="stage-line">
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">Bbm7</span>
+                <span class="stage-lyric">Girls, what y'all </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">Eb7</span>
+                <span class="stage-lyric">tryna do? </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">Abmaj7</span>
+                <span class="stage-lyric">24 karat magic in the air</span>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <span class="section-name">Chorus</span>
+            <div class="section-rule"></div>
+        </div>
+        <div class="stage-line">
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">Dbmaj7</span>
+                <span class="stage-lyric">Head to toe so </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">C7</span>
+                <span class="stage-lyric">player, </span>
+            </div>
+            <div class="stage-unit">
+                <span class="stage-chord upcoming">Fm7</span>
+                <span class="stage-lyric">look out uh!</span>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

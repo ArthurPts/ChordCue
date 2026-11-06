@@ -24,8 +24,8 @@ class ChordController extends Controller
             });
         }
 
-        // Paginate 8 kartu per halaman (4 kolom x 2 baris sesuai UI design)
-        $chords = $query->orderBy('name')->paginate(8)->withQueryString();
+        // Paginate 25 kartu per halaman
+        $chords = $query->orderBy('name')->paginate(25)->withQueryString();
 
         // Chord yang sedang terpilih untuk panel kanan
         $selectedChord = null;

@@ -1,29 +1,29 @@
 <x-app-layout>
     <div x-data="{ showCreateModal: false }">
         @if (!($hasAnySongs ?? false))
-            <!-- Empty State Khusus User yang Belum Memiliki Lagu Sesuai Target Desain UI -->
-            <div class="min-h-[calc(100vh-160px)] flex flex-col items-center justify-center px-16 py-36">
+            <!-- Empty State Khusus User yang Belum Memiliki Lagu -->
+            <div class="min-h-[calc(100vh-180px)] flex flex-col items-center justify-center px-16 py-28">
                 <!-- Information Card -->
-                <div class="bg-surface-1 border border-subtle rounded-2xl p-24 sm:p-28 max-w-[460px] w-full flex items-center gap-20">
-                    <div class="w-[52px] h-[52px] rounded-xl bg-surface-2 border border-subtle flex items-center justify-center text-ink-secondary shrink-0">
-                        <x-icon name="search" class="w-6 h-6" />
+                <div class="bg-surface-1 border border-subtle rounded-lg p-24 sm:p-32 max-w-[460px] w-full flex items-center gap-20 shadow-sm">
+                    <div class="w-[48px] h-[48px] rounded-md bg-surface-2 border border-subtle flex items-center justify-center text-accent shrink-0">
+                        <x-icon name="music" class="w-6 h-6" />
                     </div>
                     <div>
-                        <h2 class="text-base sm:text-lg font-medium text-ink">
+                        <h2 class="text-base sm:text-lg font-bold text-ink">
                             Anda Belum Memiliki Lagu Pribadi.
                         </h2>
-                        <p class="text-sm text-ink-secondary mt-4">
+                        <p class="text-xs sm:text-sm text-ink-secondary mt-2">
                             Ayo buat lagu pertamamu.
                         </p>
                     </div>
                 </div>
 
                 <!-- Buat Lagu Button (Trigger Modal) -->
-                <div class="mt-24">
+                <div class="mt-20">
                     <button
                         type="button"
                         @click="showCreateModal = true"
-                        class="h-[44px] px-24 rounded-xl bg-accent hover:bg-accent-hover text-white font-medium text-sm inline-flex items-center gap-8 shadow-sm transition-colors cursor-pointer"
+                        class="h-[42px] px-20 rounded-sm bg-accent hover:bg-accent-hover text-[#080C14] font-bold text-sm inline-flex items-center gap-8 shadow-sm transition-all cursor-pointer"
                     >
                         <x-icon name="plus" class="w-4 h-4" />
                         <span>Buat Lagu</span>
@@ -31,50 +31,48 @@
                 </div>
             </div>
         @else
-            <div class="max-w-content mx-auto w-full px-16 md:px-24 py-36">
+            <div class="max-w-content mx-auto w-full px-16 sm:px-24 py-24 sm:py-32 pb-[88px]">
                 <!-- Header Row (Title, Subtitle & Buat Lagu Button) -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-16">
+                <div class="flex items-center justify-between gap-12">
                     <div>
-                        <h1 class="text-3xl font-semibold text-ink tracking-tight">
-                            My Songs
+                        <h1 class="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">
+                            Lagu Saya
                         </h1>
-                        <p class="text-base text-ink-secondary mt-4">
+                        <p class="text-xs sm:text-sm text-ink-secondary mt-1">
                             Kelola chord sheet yang kamu buat.
                         </p>
                     </div>
 
-                    <div>
-                        <button
-                            type="button"
-                            @click="showCreateModal = true"
-                            class="h-[42px] px-18 rounded-xl bg-accent hover:bg-accent-hover text-white font-medium text-sm inline-flex items-center gap-8 transition-colors self-start sm:self-auto cursor-pointer shadow-sm"
-                        >
-                            <x-icon name="plus" class="w-4 h-4" />
-                            <span>Buat Lagu</span>
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        @click="showCreateModal = true"
+                        class="h-[40px] px-16 rounded-sm bg-accent hover:bg-accent-hover text-[#080C14] font-bold text-xs sm:text-sm inline-flex items-center gap-6 transition-all shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                        <x-icon name="plus" class="w-4 h-4" />
+                        <span>Buat Lagu</span>
+                    </button>
                 </div>
 
                 <!-- Session Status Flash Alert -->
                 @if (session('status'))
-                    <div class="mt-20 p-16 rounded-xl bg-accent/15 border border-accent/30 text-accent text-sm flex items-center gap-10">
-                        <x-icon name="check" class="w-5 h-5 shrink-0" />
+                    <div class="mt-16 p-12 rounded-md bg-accent/15 border border-accent/30 text-accent text-xs sm:text-sm flex items-center gap-8">
+                        <x-icon name="check" class="w-4 h-4 shrink-0" />
                         <span>{{ session('status') }}</span>
                     </div>
                 @endif
                 @if (session('error'))
-                    <div class="mt-20 p-16 rounded-xl bg-[#DE6D62]/15 border border-[#DE6D62]/30 text-[#DE6D62] text-sm flex items-center gap-10">
-                        <x-icon name="alert-circle" class="w-5 h-5 shrink-0" />
+                    <div class="mt-16 p-12 rounded-md bg-error-tint/80 border border-error/40 text-error text-xs sm:text-sm flex items-center gap-8">
+                        <x-icon name="alert-circle" class="w-4 h-4 shrink-0" />
                         <span>{{ session('error') }}</span>
                     </div>
                 @endif
 
                 <!-- Search and Visibility Filters Row -->
-                <form method="GET" action="{{ route('my.songs') }}" class="mt-24 flex flex-col sm:flex-row items-stretch sm:items-center gap-12">
+                <form method="GET" action="{{ route('my.songs') }}" class="mt-20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-12">
                     <button type="submit" class="hidden" aria-hidden="true"></button>
 
                     <!-- Search Input Box -->
-                    <div class="relative flex-1 sm:max-w-[280px]">
+                    <div class="relative flex-1 sm:max-w-[320px]">
                         <button type="submit" class="absolute inset-y-0 left-0 pl-14 flex items-center text-ink-secondary hover:text-accent transition-colors cursor-pointer" aria-label="Cari">
                             <x-icon name="search" class="w-4 h-4" />
                         </button>
@@ -83,17 +81,17 @@
                             name="q"
                             value="{{ request('q') }}"
                             placeholder="Cari judul lagu atau artis..."
-                            class="w-full h-[44px] pl-[40px] pr-[36px] bg-surface-2 border border-subtle rounded-xl text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-sm transition-colors"
+                            class="w-full h-[40px] pl-[38px] pr-[34px] bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors"
                         >
                         @if (request('q'))
-                            <a href="{{ route('my.songs', ['visibility' => $visibility ?? 'public']) }}" class="absolute inset-y-0 right-0 pr-14 flex items-center text-ink-secondary hover:text-ink transition-colors cursor-pointer" aria-label="Hapus pencarian">
+                            <a href="{{ route('my.songs', ['visibility' => $visibility ?? 'public']) }}" class="absolute inset-y-0 right-0 pr-12 flex items-center text-ink-secondary hover:text-ink transition-colors cursor-pointer" aria-label="Hapus pencarian">
                                 <x-icon name="x" class="w-3.5 h-3.5" />
                             </a>
                         @endif
                     </div>
 
-                    <!-- Visibility Filter Buttons (Public & Private) -->
-                    <div class="flex items-center gap-8">
+                    <!-- Visibility Segmented Control (Public & Private) -->
+                    <div class="flex items-center gap-4 bg-surface-2 border border-subtle p-3 rounded-md self-start sm:self-auto">
                         @php
                             $isPublicActive = ($visibility ?? 'public') === 'public';
                             $isPrivateActive = ($visibility ?? 'public') === 'private';
@@ -102,42 +100,42 @@
                             type="submit"
                             name="visibility"
                             value="public"
-                            class="h-[44px] px-16 rounded-xl font-medium text-sm inline-flex items-center gap-8 transition-colors cursor-pointer {{ $isPublicActive ? 'bg-accent text-white shadow-sm' : 'bg-surface-2 hover:bg-surface-3 border border-subtle text-ink-secondary hover:text-ink' }}"
+                            class="h-[32px] px-14 rounded-sm font-semibold text-xs inline-flex items-center gap-6 transition-all cursor-pointer {{ $isPublicActive ? 'bg-accent text-[#080C14] shadow-sm' : 'text-ink-secondary hover:text-ink' }}"
                         >
-                            <x-icon name="world" class="w-4 h-4" />
-                            <span>Public</span>
+                            <x-icon name="world" class="w-3.5 h-3.5" />
+                            <span>Publik</span>
                         </button>
 
                         <button
                             type="submit"
                             name="visibility"
                             value="private"
-                            class="h-[44px] px-16 rounded-xl font-medium text-sm inline-flex items-center gap-8 transition-colors cursor-pointer {{ $isPrivateActive ? 'bg-accent text-white shadow-sm' : 'bg-surface-2 hover:bg-surface-3 border border-subtle text-ink-secondary hover:text-ink' }}"
+                            class="h-[32px] px-14 rounded-sm font-semibold text-xs inline-flex items-center gap-6 transition-all cursor-pointer {{ $isPrivateActive ? 'bg-accent text-[#080C14] shadow-sm' : 'text-ink-secondary hover:text-ink' }}"
                         >
-                            <x-icon name="lock" class="w-4 h-4" />
-                            <span>Private</span>
+                            <x-icon name="lock" class="w-3.5 h-3.5" />
+                            <span>Privat</span>
                         </button>
                     </div>
                 </form>
 
                 <!-- Song Cards Grid -->
-                <div class="mt-24">
+                <div class="mt-20">
                     @if (isset($songs) && $songs->count() > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-24">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 md:gap-20">
                             @foreach ($songs as $song)
                                 <x-song-card :song="$song" :can-manage="true" />
                             @endforeach
                         </div>
                     @else
-                        <div class="bg-surface-1 border border-subtle rounded-2xl p-40 text-center max-w-[480px] mx-auto">
-                            <x-icon name="music" class="w-12 h-12 text-ink-tertiary mx-auto mb-16" />
-                            <h3 class="text-lg font-medium text-ink">Tidak Ada Lagu Ditemukan</h3>
-                            <p class="text-sm text-ink-secondary mt-6">
-                                Tidak ada lagu yang cocok dengan kriteria pencarian atau filter yang dipilih.
+                        <div class="bg-surface-1 border border-subtle rounded-lg p-32 text-center max-w-[460px] mx-auto mt-12">
+                            <x-icon name="music" class="w-10 h-10 text-ink-tertiary mx-auto mb-12" />
+                            <h3 class="text-base font-bold text-ink">Tidak Ada Lagu Ditemukan</h3>
+                            <p class="text-xs sm:text-sm text-ink-secondary mt-4">
+                                Tidak ada lagu yang cocok dengan kriteria pencarian atau filter yang kamu pilih.
                             </p>
-                            <div class="mt-20">
-                                <a href="{{ route('my.songs') }}" class="h-[40px] px-20 rounded-lg bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-sm font-medium inline-flex items-center justify-center transition-colors">
-                                    Reset Filter
+                            <div class="mt-16">
+                                <a href="{{ route('my.songs') }}" class="h-[38px] px-18 rounded-sm bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-xs font-semibold inline-flex items-center justify-center transition-colors">
+                                    Atur Ulang Filter
                                 </a>
                             </div>
                         </div>
@@ -146,7 +144,7 @@
 
                 <!-- Pagination Section -->
                 @if (isset($songs) && $songs->count() > 0)
-                    <div class="mt-40 mb-20 flex justify-center">
+                    <div class="mt-28 mb-12 flex justify-center">
                         <x-pagination :paginator="$songs" />
                     </div>
                 @endif

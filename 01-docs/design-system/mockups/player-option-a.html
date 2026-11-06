@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChordCue Player — Opsi A (Polesan Dark-Blue Studio)</title>
+    <style>
+        :root {
+            --bg-base: #0A0F1A;
+            --surface-1: #111826;
+            --surface-2: #182133;
+            --surface-3: #212C42;
+            --border-subtle: #2A3752;
+            --accent: #5B8DEF;
+            --accent-hover: #7AA2F7;
+            --accent-soft: #1B2A4A;
+            --accent-soft-text: #A9C4FF;
+            --ink: #E8EEF9;
+            --ink-secondary: #A3AEC4;
+            --ink-tertiary: #8A95AB;
+            --ink-disabled: #465068;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--ink);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 96px; /* Space for docked controls */
+        }
+
+        /* Top Header */
+        header {
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ink-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            transition: all 0.15s;
+        }
+        .back-link:hover { color: var(--ink); background: var(--surface-3); }
+
+        .song-info h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--ink);
+        }
+        .song-info p {
+            font-size: 13px;
+            color: var(--ink-secondary);
+            margin-top: 2px;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--ink-secondary);
+        }
+        .meta-chip strong { color: var(--ink); }
+
+        /* Main Workspace */
+        main {
+            max-width: 900px;
+            width: 100%;
+            margin: 24px auto;
+            padding: 0 16px;
+            flex: 1;
+        }
+
+        /* Section Container */
+        .chord-sheet {
+            background: var(--surface-1);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 32px 40px;
+            line-height: 1.8;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-soft-text);
+            background: var(--accent-soft);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 16px;
+            margin-top: 24px;
+        }
+        .section-label:first-child { margin-top: 0; }
+
+        /* Lyric & Chord Line System */
+        .chord-line {
+            display: flex;
+            flex-wrap: wrap;
+            row-gap: 20px;
+            column-gap: 18px;
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
+
+        .chord-unit {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: top;
+        }
+
+        .chord-tag {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            width: fit-content;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+
+        /* 3 States for Chords */
+        .chord-normal {
+            color: var(--accent);
+            background: transparent;
+        }
+        .chord-active {
+            color: #0A0F1A;
+            background: var(--accent);
+            transform: scale(1.08);
+            box-shadow: 0 0 16px rgba(91, 141, 239, 0.4);
+        }
+        .chord-played {
+            color: var(--ink-disabled);
+            background: transparent;
+        }
+
+        .lyric-text {
+            color: var(--ink);
+            white-space: pre;
+            line-height: 1.4;
+        }
+        .chord-played + .lyric-text {
+            color: var(--ink-secondary);
+        }
+
+        /* Bottom Fixed Transport Dock */
+        .transport-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #111826F2;
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            z-index: 50;
+        }
+
+        .dock-left, .dock-center, .dock-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Big Play Button */
+        .btn-play {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #0A0F1A;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.15s;
+        }
+        .btn-play:hover { background: var(--accent-hover); transform: scale(1.02); }
+
+        /* Beat Counter Display */
+        .beat-display {
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 6px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 90px;
+        }
+        .beat-label { font-size: 10px; color: var(--ink-tertiary); text-transform: uppercase; font-weight: 600; }
+        .beat-val { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--ink); }
+        .beat-dots {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-subtle); }
+        .dot.active { background: var(--accent); }
+
+        /* Stepper Control (Tempo & Transpose) */
+        .stepper {
+            display: flex;
+            align-items: center;
+            background: var(--surface-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            overflow: hidden;
+            height: 40px;
+        }
+        .stepper-btn {
+            width: 36px;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--ink-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+        }
+        .stepper-btn:hover { background: var(--surface-3); color: var(--ink); }
+        .stepper-val {
+            padding: 0 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            color: var(--ink);
+            min-width: 72px;
+            text-align: center;
+        }
+        .stepper-label { font-size: 10px; color: var(--ink-tertiary); margin-left: 2px; }
+
+        /* Mute Toggles */
+        .mute-group {
+            display: flex;
+            gap: 6px;
+            background: var(--surface-2);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        .mute-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--ink-secondary);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .mute-btn.on {
+            background: var(--surface-3);
+            color: var(--ink);
+            border-color: var(--border-subtle);
+        }
+        .mute-btn.muted {
+            color: var(--ink-disabled);
+            text-decoration: line-through;
+        }
+
+        /* Responsive Mobile 375px */
+        @media (max-width: 640px) {
+            header { padding: 12px 16px; }
+            .header-meta { display: none; }
+            main { padding: 0 8px; margin: 12px auto; }
+            .chord-sheet { padding: 20px 16px; font-size: 14px; }
+            .transport-dock {
+                height: auto;
+                padding: 12px 16px;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .dock-left, .dock-center, .dock-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-left">
+            <a href="#" class="back-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Daftar Lagu</span>
+            </a>
+            <div class="song-info">
+                <h1>24K Magic</h1>
+                <p>Bruno Mars</p>
+            </div>
+        </div>
+
+        <div class="header-meta">
+            <span class="meta-chip">Nada Dasar: <strong>Fm</strong></span>
+            <span class="meta-chip">Birama: <strong>4/4</strong></span>
+            <span class="meta-chip">BPM Asli: <strong>80</strong></span>
+        </div>
+    </header>
+
+    <!-- Main Chord Sheet -->
+    <main>
+        <div class="chord-sheet">
+            <div class="section-label">Intro</div>
+            <div class="chord-line">
+                <div class="chord-unit">
+                    <span class="chord-tag chord-played">Fm7</span>
+                    <span class="lyric-text">Tonight, </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-played">Bbm7</span>
+                    <span class="lyric-text">I just wanna take </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-played">Eb7</span>
+                    <span class="lyric-text">that ride </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-played">Abmaj7</span>
+                    <span class="lyric-text">with you</span>
+                </div>
+            </div>
+
+            <div class="section-label">Verse 1</div>
+            <div class="chord-line">
+                <div class="chord-unit">
+                    <span class="chord-tag chord-active">Dbmaj7</span>
+                    <span class="lyric-text">Players, put yo' </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">C7</span>
+                    <span class="lyric-text">pinky rings up </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">Fm7</span>
+                    <span class="lyric-text">to the moon</span>
+                </div>
+            </div>
+
+            <div class="chord-line">
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">Bbm7</span>
+                    <span class="lyric-text">Girls, what y'all </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">Eb7</span>
+                    <span class="lyric-text">tryna do? </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">Abmaj7</span>
+                    <span class="lyric-text">24 karat magic in the air</span>
+                </div>
+            </div>
+
+            <div class="section-label">Chorus</div>
+            <div class="chord-line">
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">Dbmaj7</span>
+                    <span class="lyric-text">Head to toe so </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">C7</span>
+                    <span class="lyric-text">player, </span>
+                </div>
+                <div class="chord-unit">
+                    <span class="chord-tag chord-normal">Fm7</span>
+                    <span class="lyric-text">look out uh!</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Transport Controls -->
+    <div class="transport-dock">
+        <div class="dock-left">
+            <button class="btn-play" aria-label="Play">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <div class="beat-display">
+                <span class="beat-label">Birama 2</span>
+                <span class="beat-val">Beat 1</span>
+                <div class="beat-dots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dock-center">
+            <!-- Sesi Tempo -->
+            <div class="stepper">
+                <button class="stepper-btn" title="Turunkan tempo">−</button>
+                <div class="stepper-val">80 <span class="stepper-label">BPM</span></div>
+                <button class="stepper-btn" title="Naikkan tempo">+</button>
+            </div>
+
+            <!-- Transpose -->
+            <div class="stepper">
+                <button class="stepper-btn" title="Turun 1 semitone">−</button>
+                <div class="stepper-val">0 <span class="stepper-label">KEY</span></div>
+                <button class="stepper-btn" title="Naik 1 semitone">+</button>
+            </div>
+        </div>
+
+        <div class="dock-right">
+            <!-- Mute Controls -->
+            <div class="mute-group">
+                <button class="mute-btn on">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span>Metronom</span>
+                </button>
+                <button class="mute-btn on">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                    <span>Vokal Aba</span>
+                </button>
+                <button class="mute-btn on">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>Backing</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+

@@ -19,24 +19,24 @@
                 this.selectedChord = chord;
             }
         }"
-        class="min-h-screen py-24 md:py-32"
+        class="min-h-screen py-24 sm:py-32 pb-[88px]"
     >
         <div class="max-w-content mx-auto px-16 sm:px-24">
             {{-- Flash Messages --}}
             @if (session('success'))
-                <div class="mb-20 p-14 bg-success/15 border border-success/30 rounded-xl text-success text-sm flex items-center justify-between">
+                <div class="mb-20 p-12 bg-success/15 border border-success/30 rounded-md text-success text-xs sm:text-sm flex items-center justify-between">
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mb-20 p-14 bg-danger/15 border border-danger/30 rounded-xl text-danger text-sm flex items-center justify-between">
+                <div class="mb-20 p-12 bg-error-tint/80 border border-error/40 text-error text-xs sm:text-sm flex items-center justify-between">
                     <span>{{ session('error') }}</span>
                 </div>
             @endif
 
             @if ($errors->any())
-                <div class="mb-20 p-14 bg-danger/15 border border-danger/30 rounded-xl text-danger text-sm">
+                <div class="mb-20 p-12 bg-error-tint/80 border border-error/40 text-error text-xs sm:text-sm">
                     <ul class="list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -48,10 +48,10 @@
             {{-- Page Header --}}
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-16 mb-24 md:mb-32">
                 <div>
-                    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-ink">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">
                         Pustaka Chord
                     </h1>
-                    <p class="text-sm text-ink-secondary mt-6">
+                    <p class="text-xs sm:text-sm text-ink-secondary mt-1">
                         Jelajahi bentuk chord dan pelajari posisi jari pada gitar.
                     </p>
                 </div>
@@ -59,7 +59,7 @@
                 {{-- Header Actions: Search & (Admin) + Tambah Chord --}}
                 <div class="flex items-center gap-12 w-full md:w-auto">
                     {{-- Search Form --}}
-                    <form method="GET" action="{{ route('chords.index') }}" class="relative flex-1 md:flex-initial">
+                    <form method="GET" action="{{ route('chords.index') }}" class="relative flex-1 md:w-[260px]">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-14 flex items-center pointer-events-none text-ink-secondary">
                                 <x-icon name="search" class="w-4 h-4" />
@@ -69,15 +69,15 @@
                                 name="q"
                                 value="{{ request('q') }}"
                                 placeholder="Cari Chord..."
-                                class="w-full md:w-[280px] h-[44px] pl-40 pr-36 bg-surface-2 border border-subtle rounded-xl text-ink placeholder:text-ink-secondary text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-colors"
+                                class="w-full h-[40px] pl-[38px] pr-[34px] bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-colors"
                             >
                             @if (request('q'))
                                 <a
                                     href="{{ route('chords.index') }}"
-                                    class="absolute inset-y-0 right-0 pr-12 flex items-center text-ink-secondary hover:text-ink"
-                                    title="Hapus filter"
+                                    class="absolute inset-y-0 right-0 pr-12 flex items-center text-ink-secondary hover:text-ink transition-colors cursor-pointer"
+                                    title="Hapus pencarian"
                                 >
-                                    <x-icon name="x" class="w-4 h-4" />
+                                    <x-icon name="x" class="w-3.5 h-3.5" />
                                 </a>
                             @endif
                         </div>
@@ -89,7 +89,7 @@
                         <button
                             type="button"
                             @click="showCreateModal = true"
-                            class="h-[44px] px-18 bg-[#5B8DF6] hover:bg-[#4C7EE7] text-white rounded-xl text-sm font-medium flex items-center gap-8 shrink-0 transition-colors shadow-button"
+                            class="h-[40px] px-16 bg-accent hover:bg-accent-hover text-[#080C14] rounded-sm text-xs sm:text-sm font-bold flex items-center gap-6 shrink-0 transition-all shadow-sm cursor-pointer whitespace-nowrap"
                         >
                             <x-icon name="plus" class="w-4 h-4" />
                             <span>Tambah Chord</span>
@@ -98,50 +98,37 @@
                 </div>
             </div>
 
-            {{-- Main Layout: 2 Columns with Vertical Divider --}}
+            {{-- Main Layout: 2 Columns with Subtle Divider --}}
             <div class="flex flex-col lg:flex-row gap-24 lg:gap-32 items-start">
-                {{-- Left Column: Chord Cards Grid & Pagination --}}
-                <div class="w-full lg:w-[62%] xl:w-[65%] flex flex-col justify-between">
+                {{-- Left Column: Chord Cards Grid (25 Chords) --}}
+                <div class="w-full lg:w-[62%] xl:w-[68%]">
                     @if ($chords->count() > 0)
-                        {{-- 4-Column Grid --}}
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-12 sm:gap-16">
+                        {{-- 5-Column Grid --}}
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-10 sm:gap-12">
                             @foreach ($chords as $chord)
-                                @php
-                                    $chordPayload = [
-                                        'id' => $chord->id,
-                                        'name' => $chord->name,
-                                        'pronunciation' => $chord->pronunciation,
-                                        'diagram_url' => $chord->diagram_url,
-                                        'fret_data' => $chord->fret_data,
-                                    ];
-                                @endphp
                                 <x-chord-card
                                     :chord="$chord"
                                     :selected="$selectedChord && $selectedChord->id === $chord->id"
-                                    ::class="selectedChord && selectedChord.id === {{ $chord->id }} ? 'border-accent ring-2 ring-accent/30' : ''"
-                                    @click="selectChord(@js($chordPayload))"
                                 />
                             @endforeach
                         </div>
 
-                        {{-- Pagination --}}
-                        <div class="mt-28">
-                            <x-pagination :paginator="$chords" />
-                        </div>
+                        {{-- Pagination (Rendered as Fixed Footer) --}}
+                        <x-pagination :paginator="$chords" />
                     @else
                         {{-- Empty State --}}
-                        <div class="p-36 bg-surface-1 border border-subtle rounded-2xl text-center">
-                            <div class="w-12 h-12 rounded-xl bg-surface-2 border border-subtle flex items-center justify-center text-accent mx-auto mb-16">
-                                <x-icon name="search" class="w-6 h-6" />
+                        <div class="p-32 bg-surface-1 border border-subtle rounded-lg text-center max-w-[460px] mx-auto">
+                            <div class="w-10 h-10 rounded-md bg-surface-2 border border-subtle flex items-center justify-center text-accent mx-auto mb-14">
+                                <x-icon name="search" class="w-5 h-5" />
                             </div>
-                            <h3 class="text-base font-medium text-ink">Chord Tidak Ditemukan</h3>
-                            <p class="text-sm text-ink-secondary mt-6 max-w-sm mx-auto">
+                            <h3 class="text-base font-bold text-ink">Chord Tidak Ditemukan</h3>
+                            <p class="text-xs sm:text-sm text-ink-secondary mt-4 max-w-sm mx-auto">
                                 Tidak ada chord yang cocok dengan kata kunci pencarian "{{ request('q') }}".
                             </p>
                             @if (request('q'))
                                 <a
                                     href="{{ route('chords.index') }}"
-                                    class="inline-block mt-16 px-16 py-8 rounded-xl bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-xs font-medium transition-colors"
+                                    class="inline-block mt-16 px-16 h-[36px] leading-[36px] rounded-sm bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-xs font-semibold transition-colors cursor-pointer"
                                 >
                                     Reset Pencarian
                                 </a>
@@ -153,20 +140,20 @@
                 {{-- Vertical Divider Line --}}
                 <div class="hidden lg:block w-[1px] bg-subtle self-stretch"></div>
 
-                {{-- Right Column: Selected Chord Preview Card (Static / Tetap di Tempat) --}}
-                <div class="w-full lg:w-[38%] xl:w-[35%]">
-                    <div class="bg-surface-1 border border-subtle rounded-2xl p-20 sm:p-24 shadow-card">
-                        {{-- Top Header of Preview Card (Cukup Nama Chord Saja) --}}
-                        <div class="flex items-center justify-between gap-12 mb-20">
+                {{-- Right Column: Selected Chord Preview Card (Sticky di Desktop - Tidak ikut scroll) --}}
+                <div class="w-full lg:w-[38%] xl:w-[32%] lg:sticky lg:top-[88px] self-start">
+                    <div class="bg-surface-1 border border-subtle rounded-lg p-20 sm:p-24 shadow-sm">
+                        {{-- Top Header of Preview Card (Nama Chord & Pelafalan) --}}
+                        <div class="flex items-center justify-between gap-12 mb-16">
                             <div>
                                 <h2
-                                    class="text-4xl sm:text-5xl font-bold text-ink tracking-tight"
+                                    class="text-[36px] sm:text-[44px] font-extrabold text-ink tracking-tight font-mono leading-none"
                                     x-text="selectedChord ? selectedChord.name : '—'"
                                 >
                                     {{ $selectedChord?->name ?? '—' }}
                                 </h2>
                                 <p
-                                    class="text-xs text-ink-secondary mt-4 font-normal"
+                                    class="text-xs sm:text-sm text-ink-secondary mt-4 font-normal"
                                     x-show="selectedChord && selectedChord.pronunciation"
                                     x-text="selectedChord ? selectedChord.pronunciation : ''"
                                 >
@@ -180,7 +167,7 @@
                                     <button
                                         type="button"
                                         @click="showEditModal = true"
-                                        class="px-20 h-[38px] bg-[#5B8DF6] hover:bg-[#4C7EE7] text-white rounded-xl text-sm font-medium transition-colors shadow-button flex items-center justify-center shrink-0"
+                                        class="h-[36px] px-16 bg-surface-2 hover:bg-surface-3 border border-subtle text-ink rounded-sm text-xs font-semibold transition-colors flex items-center justify-center shrink-0 cursor-pointer shadow-sm"
                                     >
                                         Edit
                                     </button>
@@ -188,20 +175,23 @@
                             @endif
                         </div>
 
-                        {{-- Big Diagram Container (Periwinkle / Light Blue) --}}
-                        <div class="bg-[#9DB9FB] rounded-2xl p-20 sm:p-28 flex items-center justify-center min-h-[300px] sm:min-h-[340px] overflow-hidden">
+                        {{-- Big Diagram Container (Dark Studio Surface) --}}
+                        <div class="bg-surface-2 border border-subtle/80 rounded-md p-16 sm:p-20 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[300px] overflow-hidden">
                             <template x-if="selectedChord">
-                                <img
-                                    :src="selectedChord.diagram_url || '{{ asset('storage/diagrams/No_Image_Available.jpg') }}'"
-                                    :alt="selectedChord.name"
-                                    class="max-h-[260px] max-w-full object-contain rounded-xl"
-                                >
+                                <div class="w-full flex flex-col items-center justify-center">
+                                    <img
+                                        :src="selectedChord.diagram_url || '{{ asset('storage/diagrams/No_Image_Available.jpg') }}'"
+                                        :alt="selectedChord.name"
+                                        class="max-h-[240px] max-w-full object-contain opacity-90"
+                                    >
+                                </div>
                             </template>
 
                             {{-- Fallback when no chord is selected --}}
                             <template x-if="!selectedChord">
-                                <div class="text-center text-ink-secondary text-sm">
-                                    Pilih chord untuk melihat diagram
+                                <div class="text-center text-ink-secondary text-xs sm:text-sm p-16">
+                                    <x-icon name="music" class="w-8 h-8 text-ink-tertiary mx-auto mb-8" />
+                                    <span>Pilih chord untuk melihat diagram</span>
                                 </div>
                             </template>
                         </div>

@@ -1,10 +1,10 @@
 <section>
     <header class="mb-20">
-        <h2 class="text-base font-medium text-ink">
+        <h2 class="text-base sm:text-lg font-bold text-ink tracking-tight">
             Perbarui Kata Sandi
         </h2>
 
-        <p class="mt-4 text-sm text-ink-secondary">
+        <p class="mt-2 text-xs sm:text-sm text-ink-secondary">
             Pastikan akun Anda menggunakan kata sandi yang kuat dan aman.
         </p>
     </header>
@@ -13,20 +13,20 @@
         @csrf
         @method('put')
 
-        <div>
-            <x-input-label for="update_password_current_password" value="Kata Sandi Saat Ini" />
+        <div class="space-y-4">
+            <x-input-label for="update_password_current_password" value="Kata Sandi Saat Ini" class="text-xs font-semibold text-ink-secondary" />
             <x-text-input id="update_password_current_password" name="current_password" type="password" class="block w-full" autocomplete="current-password" placeholder="••••••••" />
             <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-4" />
         </div>
 
-        <div>
-            <x-input-label for="update_password_password" value="Kata Sandi Baru" />
+        <div class="space-y-4">
+            <x-input-label for="update_password_password" value="Kata Sandi Baru" class="text-xs font-semibold text-ink-secondary" />
             <x-text-input id="update_password_password" name="password" type="password" class="block w-full" autocomplete="new-password" placeholder="Minimal 8 karakter" />
             <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-4" />
         </div>
 
-        <div>
-            <x-input-label for="update_password_password_confirmation" value="Konfirmasi Kata Sandi Baru" />
+        <div class="space-y-4">
+            <x-input-label for="update_password_password_confirmation" value="Konfirmasi Kata Sandi Baru" class="text-xs font-semibold text-ink-secondary" />
             <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="block w-full" autocomplete="new-password" placeholder="Ulangi kata sandi baru" />
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-4" />
         </div>
@@ -40,7 +40,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2500)"
-                    class="text-caption text-success flex items-center gap-4"
+                    class="text-xs font-semibold text-success flex items-center gap-6"
                 >
                     <x-icon name="check" class="h-icon-chip w-icon-chip text-success" />
                     <span>Kata sandi berhasil diperbarui.</span>

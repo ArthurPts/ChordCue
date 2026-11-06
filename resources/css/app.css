@@ -5,11 +5,15 @@
 @tailwind utilities;
 
 @layer base {
+    html {
+        color-scheme: dark;
+    }
+
     body {
         @apply bg-base font-sans text-body font-regular text-ink;
     }
 
-    /* Ring fokus keyboard untuk semua elemen interaktif (DESIGN_SYSTEM section 4). */
+    /* Ring fokus keyboard untuk semua elemen interaktif */
     :focus-visible {
         outline: var(--focus-ring-width) solid var(--color-accent-hover);
         outline-offset: var(--focus-ring-offset);
@@ -17,6 +21,22 @@
 
     input[type='checkbox'] {
         accent-color: var(--color-accent-primary);
+    }
+
+    /* Scrollbar halus tema gelap */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--color-bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-border-subtle);
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--color-surface-3);
     }
 }
 

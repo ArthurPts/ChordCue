@@ -1,10 +1,10 @@
 <section class="space-y-16">
     <header class="mb-20">
-        <h2 class="text-base font-medium text-error">
+        <h2 class="text-base sm:text-lg font-bold text-error tracking-tight">
             Hapus Akun
         </h2>
 
-        <p class="mt-4 text-sm text-ink-secondary">
+        <p class="mt-2 text-xs sm:text-sm text-ink-secondary">
             Setelah akun dihapus, semua data dan lagu milik Anda akan dihapus secara permanen. Harap pastikan kembali sebelum melanjutkan.
         </p>
     </header>
@@ -21,15 +21,15 @@
             @csrf
             @method('delete')
 
-            <h2 class="text-base font-medium text-ink">
+            <h2 class="text-base sm:text-lg font-bold text-ink tracking-tight">
                 Apakah Anda yakin ingin menghapus akun?
             </h2>
 
-            <p class="text-sm text-ink-secondary">
+            <p class="text-xs sm:text-sm text-ink-secondary">
                 Tindakan ini tidak dapat dibatalkan. Seluruh lagu dan data akun akan terhapus. Masukkan kata sandi Anda untuk mengonfirmasi.
             </p>
 
-            <div>
+            <div class="space-y-4">
                 <x-input-label for="delete_account_password" value="Kata Sandi" class="sr-only" />
 
                 <x-text-input

@@ -16,8 +16,7 @@
         x-transition:leave="ease-in duration-150"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        class="fixed inset-0 backdrop-blur-sm transition-opacity"
-        style="background-color: rgba(5, 8, 17, 0.70);"
+        class="fixed inset-0 bg-overlay backdrop-blur-sm transition-opacity"
         @click="showEditModal = false"
     ></div>
 
@@ -31,7 +30,7 @@
             x-transition:leave="ease-in duration-150"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="relative w-full max-w-[560px] transform rounded-2xl bg-surface-1 border border-subtle p-28 sm:p-36 text-left shadow-2xl transition-all"
+            class="relative w-full max-w-[520px] transform rounded-lg bg-surface-1 border border-subtle p-24 sm:p-28 text-left shadow-2xl transition-all"
             x-data="{
                 editFileName: '',
                 handleEditFile(event) {
@@ -43,10 +42,10 @@
             <!-- Modal Header -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 id="edit-chord-title" class="text-2xl sm:text-3xl font-semibold text-ink tracking-tight">
+                    <h2 id="edit-chord-title" class="text-xl sm:text-2xl font-extrabold text-ink tracking-tight">
                         Edit Chord
                     </h2>
-                    <p class="text-sm text-ink-secondary mt-6">
+                    <p class="text-xs sm:text-sm text-ink-secondary mt-1">
                         Perbarui informasi chord atau perbarui diagram visual.
                     </p>
                 </div>
@@ -57,14 +56,14 @@
                 method="POST"
                 :action="'/chords/' + (selectedChord ? selectedChord.id : '')"
                 enctype="multipart/form-data"
-                class="mt-28 space-y-20"
+                class="mt-20 space-y-16"
             >
                 @csrf
                 @method('PUT')
 
                 <!-- Chord Name Input -->
-                <div class="space-y-6">
-                    <label for="edit_chord_name" class="block text-xs font-medium text-ink-secondary">
+                <div class="space-y-4">
+                    <label for="edit_chord_name" class="block text-xs font-semibold text-ink-secondary">
                         Chord
                     </label>
                     <input
@@ -74,13 +73,13 @@
                         required
                         :value="selectedChord ? selectedChord.name : ''"
                         placeholder="nama chord"
-                        class="w-full h-[44px] px-14 bg-surface-2 border border-subtle rounded-xl text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-sm transition-colors"
+                        class="w-full h-[40px] px-14 bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors font-mono"
                     >
                 </div>
 
                 <!-- Cara Baca Input -->
-                <div class="space-y-6">
-                    <label for="edit_chord_pronunciation" class="block text-xs font-medium text-ink-secondary">
+                <div class="space-y-4">
+                    <label for="edit_chord_pronunciation" class="block text-xs font-semibold text-ink-secondary">
                         Cara Baca (contoh : C Sharp Minor)
                     </label>
                     <input
@@ -90,19 +89,19 @@
                         required
                         :value="selectedChord ? selectedChord.pronunciation : ''"
                         placeholder="cara baca"
-                        class="w-full h-[44px] px-14 bg-surface-2 border border-subtle rounded-xl text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-sm transition-colors"
+                        class="w-full h-[40px] px-14 bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors"
                     >
                 </div>
 
                 <!-- Upload Diagram Baru (Opsional) -->
-                <div class="space-y-6">
-                    <label class="block text-xs font-medium text-ink-secondary">
+                <div class="space-y-4">
+                    <label class="block text-xs font-semibold text-ink-secondary">
                         Upload Diagram Baru (Opsional)
                     </label>
 
                     <div
                         @click="$refs.editFileInput.click()"
-                        class="group relative flex flex-col items-center justify-center border border-dashed border-[#2C384E] hover:border-accent/60 bg-[#161D2B]/80 hover:bg-[#1A2334] rounded-2xl p-20 text-center cursor-pointer transition-colors"
+                        class="group relative flex flex-col items-center justify-center border border-dashed border-subtle hover:border-accent bg-surface-2/50 hover:bg-surface-2 rounded-md p-20 text-center cursor-pointer transition-all"
                     >
                         <input
                             x-ref="editFileInput"
@@ -113,32 +112,32 @@
                             @change="handleEditFile($event)"
                         >
 
-                        <div class="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center text-accent mb-10 group-hover:scale-110 transition-transform">
-                            <x-icon name="upload" class="w-6 h-6 text-accent" />
+                        <div class="w-[40px] h-[40px] rounded-sm bg-surface-3 border border-subtle flex items-center justify-center text-accent mb-8 group-hover:scale-105 transition-transform">
+                            <x-icon name="upload" class="w-[20px] h-[20px] text-accent" />
                         </div>
 
                         <template x-if="!editFileName">
                             <div>
-                                <span class="text-sm font-medium text-accent">Pilih file baru</span>
-                                <p class="text-xs text-ink-secondary mt-4">JPG, PNG (kosongkan jika tidak diubah)</p>
+                                <span class="text-xs sm:text-sm font-semibold text-accent hover:underline">Pilih file baru</span>
+                                <p class="text-[11px] text-ink-secondary mt-2">Format didukung: JPG, PNG, SVG (kosongkan jika tidak diubah)</p>
                             </div>
                         </template>
 
                         <template x-if="editFileName">
-                            <div class="flex items-center gap-8 px-12 py-6 bg-surface-2 rounded-lg text-ink text-xs max-w-full">
-                                <span class="truncate max-w-[240px]" x-text="editFileName"></span>
+                            <div class="flex items-center gap-8 px-12 py-6 bg-surface-3 border border-subtle rounded-sm text-ink text-xs max-w-full">
+                                <span class="truncate max-w-[240px] font-mono text-[11px]" x-text="editFileName"></span>
                             </div>
                         </template>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="pt-20 border-t border-subtle flex items-center justify-between">
+                <div class="pt-20 border-t border-subtle mt-24 flex items-center justify-between gap-12">
                     <div>
                         <button
                             type="button"
                             @click="if (confirm('Yakin ingin menghapus chord ini?')) { $refs.deleteChordForm.submit(); }"
-                            class="px-14 h-[40px] rounded-xl text-sm font-medium text-danger hover:bg-danger/10 transition-colors"
+                            class="h-[40px] px-18 rounded-sm bg-error-tint/70 hover:bg-error-tint border border-error/30 text-error font-semibold text-xs sm:text-sm inline-flex items-center justify-center transition-colors cursor-pointer"
                         >
                             Hapus
                         </button>
@@ -148,13 +147,13 @@
                         <button
                             type="button"
                             @click="showEditModal = false"
-                            class="px-20 h-[40px] rounded-xl text-sm font-medium border border-[#E06C75] text-[#E06C75] hover:bg-[#E06C75]/10 transition-colors"
+                            class="h-[40px] px-20 rounded-sm bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
                         >
                             Batal
                         </button>
                         <button
                             type="submit"
-                            class="px-20 h-[40px] rounded-xl text-sm font-medium bg-[#5B8DF6] hover:bg-[#4C7EE7] text-white shadow-button transition-colors flex items-center justify-center"
+                            class="h-[40px] px-24 rounded-sm bg-accent hover:bg-accent-hover text-[#080C14] text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm"
                         >
                             Simpan Perubahan
                         </button>

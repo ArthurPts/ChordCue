@@ -24,7 +24,7 @@ class SongController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'artist' => 'required|string|max:255',
-            'bpm' => 'required|integer|min:40|max:240',
+            'bpm' => 'required|integer|min:60|max:140',
             'time_signature' => 'required|string|in:4/4,3/4,2/4,6/8,12/8',
             'visibility' => 'required|in:public,private',
         ], [
@@ -32,8 +32,8 @@ class SongController extends Controller
             'artist.required' => 'Nama artist wajib diisi.',
             'bpm.required' => 'BPM wajib diisi.',
             'bpm.integer' => 'BPM harus berupa angka.',
-            'bpm.min' => 'BPM minimal 40.',
-            'bpm.max' => 'BPM maksimal 240.',
+            'bpm.min' => 'BPM minimal 60.',
+            'bpm.max' => 'BPM maksimal 140.',
             'time_signature.required' => 'Time signature wajib dipilih.',
             'visibility.required' => 'Visibilitas lagu wajib dipilih.',
         ]);

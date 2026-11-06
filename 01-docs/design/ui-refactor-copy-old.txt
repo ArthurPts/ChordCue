@@ -1,0 +1,49 @@
+# UI Refactor Session — Aturan Sementara
+
+Berlaku selama tugas UI refactor. Hapus setelah Tahap 5 selesai.
+
+## Konteks
+
+ChordCue: aplikasi latihan musik (Laravel 12, Blade + Alpine, Tailwind 3).
+Aturan desain lama (`DESIGN_SYSTEM.md`) menghasilkan tampilan kaku dan "AI banget".
+Selama sesi ini, **aturan DESIGN VISUAL di `DESIGN_SYSTEM.md` BOLEH dilanggar** bila
+hasilnya lebih baik. Ini mengesampingkan §0 nomor 4 di `CHORDCUE_RULES.md`.
+
+Tujuan: tampilan yang terasa dibuat manusia yang paham kebutuhan musisi.
+
+## Tetap Berlaku
+
+- `CHORDCUE_RULES.md` untuk semua hal non-visual: spesifikasi, gaya kode §2, PHPDoc §3,
+  Policy, migration lama, tes, larangan inline CSS (§10.2).
+- Tema gelap, font bawaan sistem (tanpa unduh font).
+- Jangan ubah logika bisnis, route, skema database, atau spesifikasi.
+- Hanya tampilan: Blade, class, CSS, dan Alpine untuk UI.
+
+## Boleh Dilonggarkan
+
+- Nilai palet persis, skala radius/spacing/ukuran.
+- Larangan bayangan dan gradien.
+- Batas enam ukuran font.
+- Kewajiban "hanya utility token".
+- Setiap penyimpangan dicatat di `01-docs/design-system/design-changelog.md`.
+
+## Hindari Tampilan Generik "AI"
+
+- Grid kartu seragam di semua halaman.
+- Gradien ungu-biru, glow, bayangan lembut seragam.
+- Hero generik rata tengah, ikon dalam lingkaran, ikon di setiap judul, emoji di UI.
+- Warna aksen di semua elemen interaktif tanpa hierarki; chip/badge berlebihan.
+- Spasi seragam tanpa ritme; semua teks rata tengah.
+- Teks promosi generik. Copy harus singkat dan natural.
+
+## Arah yang Diinginkan
+
+- Hierarki mengikuti apa yang sedang dilakukan pemain: chord dan lirik jadi pusat,
+  kontrol utama besar dan mudah diraih saat tangan sibuk bermain.
+- Tata letak bervariasi sesuai fungsi halaman: daftar lagu lebih cocok baris padat
+  daripada kartu.
+- Karakter tipografi dari bobot, ukuran, dan spasi dengan font sistem.
+- Aksen dipakai hemat.
+- Detail kecil yang berguna: empty state membantu, hover tenang.
+- Terasa matang, bukan norak.
+
