@@ -41,4 +41,12 @@ class LyricLine extends Model
     {
         return $this->hasMany(ChordPlacement::class, 'lyric_line_id');
     }
+
+    /**
+     * Alias relasi placement sesuai skema spesifikasi sistem §9.3.
+     */
+    public function placements(): HasMany
+    {
+        return $this->hasMany(ChordPlacement::class, 'lyric_line_id');
+    }
 }

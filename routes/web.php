@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\ChordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SongAudioController;
 use App\Http\Controllers\SongController;
+use App\Http\Controllers\SongTimelineController;
 use App\Http\Controllers\UserController;
 use App\Models\Artist;
 use App\Models\Category;
@@ -63,7 +65,13 @@ Route::get('/dashboard', function () {
 // Pustaka Chord (Dapat diakses Guest & Auth)
 Route::get('/chords', [ChordController::class, 'index'])->name('chords.index');
 
+// Timeline Data Lagu (Dapat diakses Guest untuk lagu publik, Pemilik/Admin untuk lagu privat)
+Route::get('/songs/{song}/timeline', [SongTimelineController::class, 'show'])->name('songs.timeline');
+
 Route::middleware('auth')->group(function () {
+    // Backing Track Offset Update
+    Route::patch('/songs/{song}/backing-track/offset', [SongAudioController::class, 'updateOffset'])->name('songs.backing-track.offset');
+
     // Profil Pengguna
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -2,31 +2,70 @@
 
 return [
 
-    // Matikan dengan TTS_ENABLED=false (mis. saat testing / tanpa internet)
+    /*
+    |--------------------------------------------------------------------------
+    | Status Text-to-Speech (TTS)
+    |--------------------------------------------------------------------------
+    | Dapat dinonaktifkan dengan TTS_ENABLED=false (mis. saat pengujian tanpa internet).
+    */
     'enabled' => env('TTS_ENABLED', true),
 
     /*
-     | Perintah edge-tts. Dipisah spasi menjadi array argumen (aman di Windows/Mac/Linux).
-     | Contoh nilai .env:
-     |   TTS_COMMAND=edge-tts
-     |   TTS_COMMAND="python -m edge_tts"      (kalau edge-tts tidak ada di PATH)
-     |   TTS_COMMAND="py -m edge_tts"          (Windows, Python launcher)
-     | Catatan: path executable yang mengandung spasi tidak didukung; pakai "python -m edge_tts".
-     */
+    |--------------------------------------------------------------------------
+    | Perintah Eksekusi edge-tts
+    |--------------------------------------------------------------------------
+    | Perintah CLI edge-tts dipisah spasi menjadi array argumen yang aman
+    | dijalankan di berbagai sistem operasi (Windows, macOS, Linux).
+    | Contoh nilai .env:
+    |   TTS_COMMAND=edge-tts
+    |   TTS_COMMAND="py -m edge_tts"          (Windows, Python launcher)
+    |   TTS_COMMAND="python -m edge_tts"      (executable python di PATH)
+    |   TTS_COMMAND="python3 -m edge_tts"     (Linux/macOS)
+    */
     'command' => array_values(array_filter(preg_split('/\s+/', trim(env('TTS_COMMAND', 'edge-tts'))))),
 
-    // Daftar suara: jalankan `edge-tts --list-voices`
-    // id-ID-ArdiNeural (pria) | id-ID-GadisNeural (wanita) | en-US-AriaNeural (Inggris)
-    'voice' => env('TTS_VOICE', 'id-ID-ArdiNeural'),
+    /*
+    |--------------------------------------------------------------------------
+    | Suara TTS (Voice)
+    |--------------------------------------------------------------------------
+    | Voice default yang dipakai untuk pelafalan audio chord oleh edge-tts.
+    | Contoh opsi suara:
+    |   - en-US-AriaNeural (Wanita, Bahasa Inggris - direkomendasikan untuk nama chord)
+    |   - en-US-GuyNeural  (Pria, Bahasa Inggris)
+    |   - id-ID-ArdiNeural (Pria, Bahasa Indonesia)
+    |   - id-ID-GadisNeural (Wanita, Bahasa Indonesia)
+    */
+    'voice' => env('TTS_VOICE', 'en-US-AriaNeural'),
 
-    // Kecepatan bicara, format edge-tts: "+0%", "-10%", "+20%"
-    'rate' => env('TTS_RATE', '-10%'),
+    /*
+    |--------------------------------------------------------------------------
+    | Kecepatan Bicara (Speech Rate)
+    |--------------------------------------------------------------------------
+    | Format parameter kecepatan bicara edge-tts: "+0%", "-10%", "+20%".
+    */
+    'rate' => env('TTS_RATE', '+0%'),
 
-    // Batas waktu satu proses TTS (detik)
+    /*
+    |--------------------------------------------------------------------------
+    | Batas Waktu Proses (Timeout)
+    |--------------------------------------------------------------------------
+    | Batas waktu maksimal eksekusi satu proses edge-tts dalam satuan detik.
+    */
     'timeout' => (int) env('TTS_TIMEOUT', 60),
 
-    // Lokasi penyimpanan: storage/app/public/chords/audio/*.mp3
-    // Pastikan sudah menjalankan: php artisan storage:link
+    /*
+    |--------------------------------------------------------------------------
+    | Disk & Lokasi Penyimpanan File Audio TTS
+    |--------------------------------------------------------------------------
+    | 'disk': Menentukan nama disk penyimpanan Laravel (didefinisikan pada
+    | config/filesystems.php) tempat file MP3 hasil generate disimpan dan
+    | disajikan ke browser.
+    | Nilai bawaan adalah 'public' (storage/app/public/), yang dapat diakses publik
+    | lewat URL Storage::url('chords/audio/...').
+    |
+    | 'directory': Subdirektori penyimpanan file audio di dalam disk tersebut.
+    */
     'disk' => env('TTS_DISK', 'public'),
     'directory' => env('TTS_DIRECTORY', 'chords/audio'),
+
 ];

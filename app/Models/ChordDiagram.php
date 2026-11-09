@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ChordDiagram extends Model
 {
@@ -23,5 +24,22 @@ class ChordDiagram extends Model
     public function chord(): BelongsTo
     {
         return $this->belongsTo(Chord::class, 'chord_id');
+    }
+
+    /**
+     * Menghapus record diagram beserta file gambar fisiknya di storage.
+     * Sesuai aturan CHORDCUE_RULES.md §5.
+     *
+     * Fungsi ini digunakan pada:
+     * - Chord::deleteWithFiles()
+     * - ChordDiagramController::destroy()
+     */
+    public function deleteWithFiles(): void
+    {
+        if ($this->file_path && Storage::disk('public')->exists($this->file_path)) {
+            Storage::disk('public')->delete($this->file_path);
+        }
+
+        $this->delete();
     }
 }
