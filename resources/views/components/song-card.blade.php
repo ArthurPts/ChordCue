@@ -18,7 +18,7 @@
         $bpm = $bpm ?? $song->bpm;
         $timeSignature = $timeSignature ?? ($song->time_signature_numerator . '/' . $song->time_signature_denominator);
         $categories = $categories ?? $song->categories;
-        $url = $url !== '#' ? $url : route('chords.index');
+        $url = $url !== '#' ? $url : ($song ? route('songs.show', $song) : route('chords.index'));
         $editUrl = $editUrl !== '#' ? $editUrl : route('songs.edit', $song);
         $deleteUrl = $deleteUrl !== '#' ? $deleteUrl : route('songs.destroy', $song);
     } else {

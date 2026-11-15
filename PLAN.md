@@ -251,9 +251,10 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
 
 ---
 
-### BATCH 1: Player Page
+### BATCH 1: Player Page [SELESAI / COMPLETED]
 **Tujuan**: Membangun halaman latihan interaktif (`/songs/{song}`) dengan tampilan Stage & Tape Deck, chord sheet dinamis, metronom, aba-aba TTS, sinkronisasi backing track (terikat `t0 + backing_track_offset`), dan kontrol transpose/tempo sesi.
 
+- **Status**: **SELESAI (COMPLETED)**
 - **Scope**:
   - Route `GET /songs/{song}` dan method `SongController::show()`.
   - View Blade `resources/views/songs/player.blade.php`.
@@ -286,27 +287,28 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
   6. Terapkan logika polling kesiapan audio jika `audio_ready === false`.
   7. Tulis pengujian Pest di `tests/Feature/PlayerPageTest.php` mencakup skenario offset playback dan otorisasi.
 - **File Dibuat / Dimodifikasi**:
-  - *Modify*: `app/Http/Controllers/SongController.php`, `routes/web.php`
-  - *Create*: `resources/views/songs/player.blade.php`
-  - *Modify*: `resources/js/app.js` (daftarkan inisialisasi player jika diperlukan)
-  - *Create*: `tests/Feature/PlayerPageTest.php`
+  - *Modify*: `app/Http/Controllers/SongController.php`, `config/chordcue.php`, `.env`, `.env.example`, `config/filesystems.php`, `routes/web.php`, `resources/views/components/song-card.blade.php`, `resources/views/components/icon.blade.php`, `resources/js/audio/audio-engine.js`, `resources/js/app.js`
+  - *Create*: `resources/js/player.js`, `resources/views/songs/player.blade.php`
+  - *Create*: `tests/Feature/PlayerPageTest.php`, `tests/js/timing.test.mjs`
 - **Aturan & Skills yang Berlaku**:
   - `CHORDCUE_RULES.md` §8 (Alpine tidak memuat audio logic; fetch CSRF; bahasa UI murni Bahasa Indonesia tanpa `__()`), `design-rules.md` (tema gelap `#0A0F1A`, whitelist radius, `font-mono` untuk metrik, no inline CSS), skill `frontend-design`.
 - **Adaptasi TTS**:
-  - Memanfaatkan audio URL yang dihasilkan Batch 0. Memutar klip dengan jeda aman `cue_margin_ms` sebelum beat.
+  - Memanfaatkan audio URL yang dihasilkan Batch 0. Memutar klip dengan lead time `cue_margin_ms` (default `1000` ms / `1.0` dtk via `CHORDCUE_CUE_MARGIN_MS`) sebelum beat melalui helper `computeChordScheduleTime()` dengan clamp `minStartTime = max(t0, prevBeatTime)`.
 - **UI Changes Sesuai Design Rule**:
   - Mengganti gaya krem/ungu Project B menjadi palet Rack Studio gelap murni: Latar `bg-base` (`#0A0F1A`), kartu lirik `bg-surface-1` (`#111826`), baris kontrol `bg-surface-2` (`#182133`).
   - Chord aktif disorot dengan aksen `bg-accent text-accent-on font-bold rounded-sm`.
   - Chord sudah dimainkan diberi warna redup `text-ink-tertiary` tanpa glowing blur klise AI.
 - **Kriteria Penerimaan (Checklist Verifikasi)**:
-  - [ ] Rute `GET /songs/{song}` dapat diakses oleh guest jika lagu publik, dan menolak (403) jika privat milik orang lain.
-  - [ ] Klik "Putar" memulai count-in metronom tepat pada `t0 + offset - countIn` sebelum beat 1 lagu di `t0 + offset`.
-  - [ ] Mengubah BPM sesi me-mute backing track secara otomatis tanpa mengubah nilai `backing_track_offset`.
-  - [ ] Klip audio TTS chord berbunyi selesai tepat sebelum ketukan pergantian chord (`cue_margin_ms`).
-  - [ ] Tampilan chord sheet menyorot chord aktif tepat pada ketukannya dan berpindah ke "sudah dimainkan" setelahnya.
-  - [ ] Mengubah Transpose ke +1 memuat ulang timeline transpose tanpa menyentuh database lagu.
-  - [ ] Seluruh teks antarmuka ditulis langsung dalam Bahasa Indonesia tanpa `{{ __('...') }}`.
-  - [ ] Seluruh pengujian Pest di Batch 1 lulus 100%.
+  - [x] Rute `GET /songs/{song}` dapat diakses oleh guest jika lagu publik, dan menolak (403) jika privat milik orang lain. (PASS: diverifikasi di `PlayerPageTest`)
+  - [x] Sinkronisasi offset dan count-in metronom selalu mencapai nol tepat bersamaan pada beat 1 lagu (baik dengan maupun tanpa file backing track) tanpa jeda/dropout: jika offset >= 1 bar, metronom mulai saat offset tersisa 1 bar; jika offset < 1 bar, metronom mulai duluan dan offset/backing track mulai saat bar tersisa sebesar offset. (PASS: diimplementasikan melalui `computeAnchors()` di [audio-engine.js](file:///c:/xampp/new/htdocs/LearnLaravel/chordcue/resources/js/audio/audio-engine.js) dan diverifikasi unit test nyata `tests/js/timing.test.mjs`)
+  - [x] Lirik tidak berubah warna saat pergantian chord dan selalu tampil kontras putih terang (`text-white`), hanya lencana chord yang bertransisi status visual (Normal, Aktif, Sudah Dimainkan). (PASS: diverifikasi di `PlayerPageTest`)
+  - [x] Mengubah BPM sesi me-mute backing track secara otomatis tanpa mengubah nilai `backing_track_offset`. (PASS: diimplementasikan di `player.js`, `audio-engine.js`, dan diverifikasi di `tests/js/timing.test.mjs`)
+  - [x] Klip audio TTS chord dijadwalkan dengan lead time reaksi `cue_margin_ms` (default `1000` ms / `1.0` dtk, dapat diatur via `CHORDCUE_CUE_MARGIN_MS`) menggunakan rumus `Tstart = max(minStartTime, Tbeat - D_speech - M_cue)` lewat helper bersama `computeChordScheduleTime()` (dipakai di `play()` maupun `recalibrateScheduledEvents()`) dengan `minStartTime = max(t0, prevBeatTime)`, deteksi akhir ucapan aktual (`measureSpeechEnd` pada ambang `-40 dBFS`), serta konstanta `chord_cue_trim_ms` di `config/chordcue.php`. (PASS: diverifikasi unit test nyata `tests/js/timing.test.mjs` & `PlayerPageTest`)
+  - [x] Tampilan chord sheet menyorot chord aktif tepat pada ketukannya dan berpindah ke "sudah dimainkan" setelahnya. (PASS: diimplementasikan via reactive callback `onChordStateChange`)
+  - [x] Mengubah Transpose ke +1 memuat ulang timeline transpose tanpa menyentuh database lagu. (PASS: diverifikasi di `PlayerPageTest`)
+  - [x] Seluruh teks antarmuka ditulis langsung dalam Bahasa Indonesia tanpa `{{ __('...') }}`. (PASS: diverifikasi di `PlayerPageTest`)
+  - [x] Lirik tetap tampil kontras (`text-white`) meski tanpa chord placements; pesan status peringatan terpusat di LCD tanpa duplikasi; slider BPM (`0..200`) selaras presisi dengan bullet (`40..240`); metronom tetap dapat diputar meski tanpa chord (`isContinuousMetronome`) sementara lagu ber-chord mewajibkan audio chord siap (`canPlay()`); informasi offset (`ms` & `s`) tampil aktif. (PASS: diverifikasi di `PlayerPageTest`)
+  - [x] Seluruh pengujian otomatis lulus 100%. (PASS: Node timing tests 7 passed; `PlayerPageTest` 19 passed; seluruh Pest suite 101 passed, 1 skipped, 490 assertions)
 
 ---
 

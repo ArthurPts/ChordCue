@@ -6,13 +6,12 @@ return [
     |--------------------------------------------------------------------------
     | Pelafalan Nada Akar & Bass (Notes)
     |--------------------------------------------------------------------------
-    | Nada 'A' secara eksplisit dilafalkan sebagai "Ae" (/eɪ/) agar mesin TTS
-    | bahasa Inggris (seperti en-US-AriaNeural) tidak mengartikannya sebagai
-    | artikel gramatikal "a" (sebuah /ə/).
-    | Nada lain (B s/d G) tetap menggunakan huruf alfabetnya masing-masing.
+    | Seluruh nada akar & bass (A s/d G) menggunakan huruf alfabetnya masing-masing
+    | agar terbaca alami di UI; penyesuaian khusus TTS (mis. jeda koma setelah 'A'
+    | agar tidak dibaca sebagai artikel /ə/) ditangani di GenerateChordAudio.
     */
     'notes' => [
-        'A' => 'Ae',
+        'A' => 'A',
         'B' => 'B',
         'C' => 'C',
         'D' => 'D',

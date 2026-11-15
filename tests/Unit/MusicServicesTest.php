@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\GenerateChordAudio;
 use App\Services\ChordTransposer;
 use App\Services\PronunciationGenerator;
 
@@ -61,23 +62,23 @@ describe('ChordTransposer Service', function () {
 });
 
 describe('PronunciationGenerator Service', function () {
-    test('melafalkan nada A sebagai Ae agar tidak diartikan sebagai artikel bahasa Inggris', function () {
+    test('melafalkan nada A menggunakan huruf A agar terbaca alami di UI', function () {
         $generator = new PronunciationGenerator();
 
-        expect($generator->generate('A'))->toBe('Ae');
-        expect($generator->generate('Am'))->toBe('Ae minor');
-        expect($generator->generate('Am7'))->toBe('Ae minor 7');
-        expect($generator->generate('Amaj7'))->toBe('Ae major 7');
-        expect($generator->generate('Ab'))->toBe('Ae flat');
-        expect($generator->generate('A#m'))->toBe('Ae sharp minor');
-        expect($generator->generate('A/C#'))->toBe('Ae over C sharp');
-        expect($generator->generate('G/A'))->toBe('G over Ae');
+        expect($generator->generate('A'))->toBe('A');
+        expect($generator->generate('Am'))->toBe('A minor');
+        expect($generator->generate('Am7'))->toBe('A minor 7');
+        expect($generator->generate('Amaj7'))->toBe('A major 7');
+        expect($generator->generate('Ab'))->toBe('A flat');
+        expect($generator->generate('A#m'))->toBe('A sharp minor');
+        expect($generator->generate('A/C#'))->toBe('A over C sharp');
+        expect($generator->generate('G/A'))->toBe('G over A');
     });
 
     test('tidak mempengaruhi pelafalan nada lain atau kata yang mengandung huruf a', function () {
         $generator = new PronunciationGenerator();
 
-        // Kata 'major', 'flat', 'add', 'augmented' tidak boleh berubah menjadi 'Ae'
+        // Kata 'major', 'flat', 'add', 'augmented' tetap utuh tanpa perubahan
         expect($generator->generate('Cmaj7'))->toBe('C major 7');
         expect($generator->generate('Bb'))->toBe('B flat');
         expect($generator->generate('Cadd9'))->toBe('C add 9');
@@ -102,7 +103,7 @@ describe('PronunciationGenerator Service', function () {
         expect($generator->generate('E7alt'))->toBe('E 7 altered');
         expect($generator->generate('C6/9'))->toBe('C 6 9');
         expect($generator->generate('C5'))->toBe('C 5');
-        expect($generator->generate('Am(maj7)'))->toBe('Ae minor major 7');
+        expect($generator->generate('Am(maj7)'))->toBe('A minor major 7');
         expect($generator->generate('Ddim'))->toBe('D diminished');
     });
 
@@ -112,6 +113,28 @@ describe('PronunciationGenerator Service', function () {
         expect($generator->generate('F#m7/C#'))->toBe('F sharp minor 7 over C sharp');
         expect($generator->generate('C/E'))->toBe('C over E');
         expect($generator->generate('G/B'))->toBe('G over B');
+    });
+});
+
+describe('GenerateChordAudio TTS Text Formatter', function () {
+    test('menambahkan koma setelah nada A yang diikuti kata lain untuk edge-tts', function () {
+        expect(GenerateChordAudio::formatTextForTts('A'))->toBe('A');
+        expect(GenerateChordAudio::formatTextForTts('G over A'))->toBe('G over A');
+        expect(GenerateChordAudio::formatTextForTts('A minor'))->toBe('A, minor');
+        expect(GenerateChordAudio::formatTextForTts('A major 7'))->toBe('A, major 7');
+        expect(GenerateChordAudio::formatTextForTts('A over C sharp'))->toBe('A, over C sharp');
+        expect(GenerateChordAudio::formatTextForTts('G over A flat'))->toBe('G over A, flat');
+        expect(GenerateChordAudio::formatTextForTts('G over A sharp'))->toBe('G over A, sharp');
+        expect(GenerateChordAudio::formatTextForTts('A suss four'))->toBe('A, suss four');
+    });
+
+    test('menormalisasi data lama Ae dan tidak mengubah kata non-nada A', function () {
+        expect(GenerateChordAudio::formatTextForTts('Ae'))->toBe('A');
+        expect(GenerateChordAudio::formatTextForTts('Ae minor'))->toBe('A, minor');
+        expect(GenerateChordAudio::formatTextForTts('G over Ae'))->toBe('G over A');
+        expect(GenerateChordAudio::formatTextForTts('C major 7'))->toBe('C major 7');
+        expect(GenerateChordAudio::formatTextForTts('C add 9'))->toBe('C add 9');
+        expect(GenerateChordAudio::formatTextForTts('A, minor'))->toBe('A, minor');
     });
 });
 

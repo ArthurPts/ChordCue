@@ -68,6 +68,9 @@ Route::get('/chords', [ChordController::class, 'index'])->name('chords.index');
 // Timeline Data Lagu (Dapat diakses Guest untuk lagu publik, Pemilik/Admin untuk lagu privat)
 Route::get('/songs/{song}/timeline', [SongTimelineController::class, 'show'])->name('songs.timeline');
 
+// Halaman Player Latihan (Dapat diakses Guest untuk lagu publik, Pemilik/Admin untuk lagu privat)
+Route::get('/songs/{song}', [SongController::class, 'show'])->name('songs.show');
+
 Route::middleware('auth')->group(function () {
     // Backing Track Offset Update
     Route::patch('/songs/{song}/backing-track/offset', [SongAudioController::class, 'updateOffset'])->name('songs.backing-track.offset');

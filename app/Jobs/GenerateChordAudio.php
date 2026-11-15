@@ -56,7 +56,8 @@ class GenerateChordAudio implements ShouldQueue
         $disk->makeDirectory(dirname($relative));
         $absolute = $disk->path($relative);
 
-        $text = trim($chord->pronunciation) !== '' ? $chord->pronunciation : $chord->name;
+        $rawText = trim($chord->pronunciation) !== '' ? $chord->pronunciation : $chord->name;
+        $text = self::formatTextForTts($rawText);
 
         $command = array_merge(config('tts.command'), [
             '--voice', config('tts.voice'),
@@ -77,6 +78,30 @@ class GenerateChordAudio implements ShouldQueue
         }
 
         DB::table('chords')->where('id', $chord->id)->update(['file_path' => $relative]);
+    }
+
+    /**
+     * Menyesuaikan teks pelafalan untuk edge-tts agar huruf nada 'A' tetap
+     * dilafalkan sebagai /eɪ/ dan bukan artikel bahasa Inggris /ə/ ("uh").
+     *
+     * Fungsi ini digunakan pada:
+     * - GenerateChordAudio::handle
+     * - Pengujian unit MusicServicesTest
+     */
+    public static function formatTextForTts(string $rawText): string
+    {
+        $trimmedText = trim($rawText);
+        if ($trimmedText === '') {
+            return '';
+        }
+
+        // Kembalikan teks lama yang memakai 'Ae' sebagai token nada ke 'A'
+        $normalizedText = preg_replace('/\bAe\b/', 'A', $trimmedText) ?? $trimmedText;
+
+        // Sisipkan koma setelah huruf nada tunggal 'A' bila diikuti kata lain
+        // (mis. "A minor" -> "A, minor", "G over A flat" -> "G over A, flat")
+        // agar mesin TTS en-US tidak menganggapnya artikel "a" (/ə/).
+        return preg_replace('/\bA(?=\s+\S)/', 'A,', $normalizedText) ?? $normalizedText;
     }
 
     /**

@@ -5,9 +5,34 @@ namespace App\Http\Controllers;
 use App\Models\Artist;
 use App\Models\Song;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class SongController extends Controller
 {
+    /**
+     * Menampilkan halaman Player latihan untuk sebuah lagu.
+     * Mengikuti otorisasi SongPolicy: lagu publik terbuka untuk siapa saja (termasuk Guest),
+     * sedangkan lagu privat hanya dapat diakses oleh pemilik atau administrator.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: GET /songs/{song} (songs.show)
+     * - resources/views/welcome.blade.php (klik kartu lagu)
+     * - resources/views/my-songs.blade.php (klik tombol Putar)
+     */
+    public function show(Song $song): View
+    {
+        // 1. Otorisasi & Validasi Input
+        Gate::authorize('view', $song);
+
+        // 2. Query Database
+        $song->loadMissing(['artist', 'categories', 'sections.lines.placements.chord']);
+
+        // 3. Response / Render View
+        return view('songs.player', [
+            'song' => $song,
+        ]);
+    }
     /**
      * Tampilkan form pembuatan lagu baru.
      */

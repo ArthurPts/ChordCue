@@ -7,8 +7,9 @@ namespace App\Services;
  * Mengonversi notasi simbolik chord menjadi kata-kata bahasa Inggris ramah TTS
  * sesuai aturan spesifikasi sistem §7.6 dan config/pronunciation.php.
  *
- * Menjamin pelafalan nada 'A' sebagai "Ae" (/eɪ/) untuk mencegah mesin TTS
- * mengartikannya sebagai artikel "a" (sebuah /ə/), tanpa mempengaruhi chord lain.
+ * Seluruh nada akar & bass (A s/d G) disimpan menggunakan huruf alfabetnya agar
+ * mudah dibaca pada UI, sedangkan penyesuaian pelafalan 'A' untuk mesin TTS
+ * ditangani di job GenerateChordAudio.
  *
  * Fungsi ini digunakan pada:
  * - SongTimelineController::show (GET /songs/{song}/timeline?transpose=N)
@@ -27,10 +28,10 @@ class PronunciationGenerator
      * Menghasilkan teks pengucapan fonetik dari nama chord.
      *
      * Contoh:
-     * - generate('A')        => 'Ae'
-     * - generate('Am')       => 'Ae minor'
-     * - generate('A/C#')     => 'Ae over C sharp'
-     * - generate('G/A')      => 'G over Ae'
+     * - generate('A')        => 'A'
+     * - generate('Am')       => 'A minor'
+     * - generate('A/C#')     => 'A over C sharp'
+     * - generate('G/A')      => 'G over A'
      * - generate('F#m7b5')   => 'F sharp minor 7 flat 5'
      * - generate('Cmaj7#11') => 'C major 7 sharp 11'
      * - generate('C7#9b13')  => 'C 7 sharp 9 flat 13'
@@ -66,7 +67,7 @@ class PronunciationGenerator
             $rootAccidental = $rootMatches[2];
             $suffix = $rootMatches[3];
 
-            // Pelafalan nada akar ('A' -> 'Ae', lainnya sesuai hurufnya)
+            // Pelafalan nada akar sesuai huruf alfabetnya
             $tokens[] = $notesMap[$rootLetter] ?? $rootLetter;
 
             // Aksidental nada akar
@@ -182,7 +183,7 @@ class PronunciationGenerator
         }
 
         return [
-            'A' => 'Ae',
+            'A' => 'A',
             'B' => 'B',
             'C' => 'C',
             'D' => 'D',
