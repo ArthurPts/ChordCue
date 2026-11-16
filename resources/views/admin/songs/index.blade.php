@@ -199,7 +199,7 @@
                                         </a>
 
                                         <!-- Edit -->
-                                        <a href="{{ route('songs.edit', $song) }}" class="h-[32px] px-12 rounded-sm bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-xs font-semibold inline-flex items-center justify-center transition-colors">
+                                        <a href="{{ route('songs.editor.simple', $song) }}" class="h-[32px] px-12 rounded-sm bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-xs font-semibold inline-flex items-center justify-center transition-colors">
                                             <span>Edit</span>
                                         </a>
 

@@ -99,17 +99,17 @@
                             <label for="modal_song_bpm" class="block text-xs font-semibold text-ink-secondary">
                                 BPM
                             </label>
-                            <span class="text-[11px] text-ink-tertiary font-mono">60 - 140</span>
+                            <span class="text-[11px] text-ink-tertiary font-mono">40 - 240</span>
                         </div>
                         <input
                             id="modal_song_bpm"
                             type="number"
                             name="bpm"
                             value="120"
-                            min="60"
-                            max="140"
+                            min="40"
+                            max="240"
                             required
-                            placeholder="Masukkan BPM (60 - 140)"
+                            placeholder="Masukkan BPM (40 - 240)"
                             class="w-full h-[40px] px-14 bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors font-mono"
                         >
                     </div>
@@ -130,7 +130,6 @@
                                 <option value="3/4">3/4</option>
                                 <option value="2/4">2/4</option>
                                 <option value="6/8">6/8</option>
-                                <option value="12/8">12/8</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-12 flex items-center pointer-events-none text-ink-secondary">
                                 <x-icon name="chevron-down" class="w-4 h-4" />

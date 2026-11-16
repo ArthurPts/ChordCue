@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\ChordController;
+use App\Http\Controllers\ChordPlacementController;
+use App\Http\Controllers\LyricLineController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SongAudioController;
 use App\Http\Controllers\SongController;
+use App\Http\Controllers\SongSectionController;
 use App\Http\Controllers\SongTimelineController;
 use App\Http\Controllers\UserController;
 use App\Models\Artist;
@@ -72,7 +75,9 @@ Route::get('/songs/{song}/timeline', [SongTimelineController::class, 'show'])->n
 Route::get('/songs/{song}', [SongController::class, 'show'])->name('songs.show');
 
 Route::middleware('auth')->group(function () {
-    // Backing Track Offset Update
+    // Backing Track Upload, Delete & Offset Update
+    Route::post('/songs/{song}/backing-track', [SongAudioController::class, 'store'])->name('songs.backing-track.store');
+    Route::delete('/songs/{song}/backing-track', [SongAudioController::class, 'destroy'])->name('songs.backing-track.destroy');
     Route::patch('/songs/{song}/backing-track/offset', [SongAudioController::class, 'updateOffset'])->name('songs.backing-track.offset');
 
     // Profil Pengguna
@@ -117,8 +122,24 @@ Route::middleware('auth')->group(function () {
     // Song Actions
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
     Route::get('/songs/create', [SongController::class, 'create'])->name('songs.create');
+    Route::get('/songs/{song}/editor/simple', [SongController::class, 'editorSimple'])->name('songs.editor.simple');
     Route::get('/songs/{song}/edit', [SongController::class, 'edit'])->name('songs.edit');
+    Route::patch('/songs/{song}', [SongController::class, 'update'])->name('songs.update');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
+
+    // Simple Editor AJAX Actions (Sections, Lyric Lines, Chord Placements)
+    Route::post('/songs/{song}/sections', [SongSectionController::class, 'store'])->name('songs.sections.store');
+    Route::patch('/sections/{section}', [SongSectionController::class, 'update'])->name('sections.update');
+    Route::delete('/sections/{section}', [SongSectionController::class, 'destroy'])->name('sections.destroy');
+
+    Route::post('/sections/{section}/lines', [LyricLineController::class, 'store'])->name('sections.lines.store');
+    Route::patch('/lines/{line}', [LyricLineController::class, 'update'])->name('lines.update');
+    Route::delete('/lines/{line}', [LyricLineController::class, 'destroy'])->name('lines.destroy');
+
+    Route::post('/lines/{line}/placements', [ChordPlacementController::class, 'store'])->name('lines.placements.store');
+    Route::patch('/placements/{placement}', [ChordPlacementController::class, 'update'])->name('placements.update');
+    Route::post('/placements/{placement}/release', [ChordPlacementController::class, 'release'])->name('placements.release');
+    Route::delete('/placements/{placement}', [ChordPlacementController::class, 'destroy'])->name('placements.destroy');
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->group(function () {

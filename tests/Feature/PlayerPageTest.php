@@ -309,8 +309,8 @@ test('kartu lagu di katalog publik dan lagu saya mengarah ke route player songs.
     $responseMySongs->assertSee(route('songs.show', $this->publicSong));
 });
 
-test('timeline yang dikonsumsi player hanya memuat placement lengkap dan backing_track_offset', function () {
-    // Tambahkan placement tidak lengkap (start_beat null)
+test('timeline yang dikonsumsi player menampilkan chord berposisi meski start_beat null dan menjaga hasCompletePlacements untuk audio', function () {
+    // Tambahkan placement dari Simple Editor (sudah punya position, start_beat masih null)
     $section = $this->publicSong->sections()->first();
     $line = $section->lines()->first();
 
@@ -318,7 +318,15 @@ test('timeline yang dikonsumsi player hanya memuat placement lengkap dan backing
         'lyric_line_id' => $line->id,
         'chord_id'      => $this->chordC->id,
         'position'      => 5,
-        'start_beat'    => null, // Incomplete
+        'start_beat'    => null,
+    ]);
+
+    // Placement tanpa position sama sekali tetap tidak tampil di lirik player
+    ChordPlacement::create([
+        'lyric_line_id' => $line->id,
+        'chord_id'      => $this->chordC->id,
+        'position'      => null,
+        'start_beat'    => 9,
     ]);
 
     $response = $this->get(route('songs.timeline', $this->publicSong));
@@ -328,11 +336,19 @@ test('timeline yang dikonsumsi player hanya memuat placement lengkap dan backing
     expect($data['song']['backing_track_offset'])->toEqual(2.500);
     expect($data['song']['backing_track']['offset'])->toEqual(2.500);
 
-    // Pastikan hanya 2 placement lengkap yang dikembalikan, bukan 3
+    // Seluruh 3 placement yang memiliki position (0, 5, 12) tampil urut position
     $placements = $data['sections'][0]['lines'][0]['placements'];
-    expect($placements)->toHaveCount(2);
+    expect($placements)->toHaveCount(3);
+    expect($placements[0]['position'])->toEqual(0);
     expect($placements[0]['start_beat'])->toEqual(1);
-    expect($placements[1]['start_beat'])->toEqual(5);
+    expect($placements[1]['position'])->toEqual(5);
+    expect($placements[1]['start_beat'])->toBeNull();
+    expect($placements[2]['position'])->toEqual(12);
+    expect($placements[2]['start_beat'])->toEqual(5);
+
+    // hasCompletePlacements tetap mengecek start_beat !== null agar chord tanpa beat tidak dianggap siap bersuara
+    $playerJs = file_get_contents(resource_path('js/player.js'));
+    expect($playerJs)->toContain('placement.position !== null && placement.start_beat !== null');
 });
 
 test('transpose sesi di timeline player tidak mengubah data default_key lagu di database', function () {

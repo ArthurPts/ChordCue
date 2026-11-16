@@ -73,18 +73,13 @@ test('pemilik lagu berhasil memperbarui nilai offset backing track', function ()
     expect((float) $this->song->fresh()->backing_track_offset)->toBe(2.35);
 });
 
-test('pemilik lagu berhasil menyimpan offset negatif', function () {
+test('validasi menolak nilai offset negatif', function () {
     $response = $this->actingAs($this->owner)->patchJson(route('songs.backing-track.offset', $this->song), [
         'offset' => -0.250,
     ]);
 
-    $response->assertOk()
-        ->assertJson([
-            'success'              => true,
-            'backing_track_offset' => -0.25,
-        ]);
-
-    expect((float) $this->song->fresh()->backing_track_offset)->toBe(-0.25);
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['offset']);
 });
 
 test('administrator dapat memperbarui offset backing track lagu milik siapa saja', function () {
@@ -101,19 +96,23 @@ test('administrator dapat memperbarui offset backing track lagu milik siapa saja
     expect((float) $this->song->fresh()->backing_track_offset)->toBe(4.12);
 });
 
-test('validasi menolak nilai offset di luar rentang -10.000 hingga +10.000', function () {
-    // Nilai di atas 10.000
-    $tooHighResponse = $this->actingAs($this->owner)->patchJson(route('songs.backing-track.offset', $this->song), [
-        'offset' => 10.001,
+test('validasi menerima nilai offset lebih dari 10 detik tanpa batas atas dan menolak nilai negatif', function () {
+    // Nilai di atas 10.000 detik diterima (tidak ada batas atas validasi)
+    $aboveTenResponse = $this->actingAs($this->owner)->patchJson(route('songs.backing-track.offset', $this->song), [
+        'offset' => 15.500,
     ]);
-    $tooHighResponse->assertUnprocessable()
-        ->assertJsonValidationErrors(['offset']);
+    $aboveTenResponse->assertOk()
+        ->assertJson([
+            'success'              => true,
+            'backing_track_offset' => 15.5,
+        ]);
+    expect((float) $this->song->fresh()->backing_track_offset)->toBe(15.5);
 
-    // Nilai di bawah -10.000
-    $tooLowResponse = $this->actingAs($this->owner)->patchJson(route('songs.backing-track.offset', $this->song), [
+    // Nilai negatif ditolak
+    $negativeResponse = $this->actingAs($this->owner)->patchJson(route('songs.backing-track.offset', $this->song), [
         'offset' => -10.001,
     ]);
-    $tooLowResponse->assertUnprocessable()
+    $negativeResponse->assertUnprocessable()
         ->assertJsonValidationErrors(['offset']);
 });
 

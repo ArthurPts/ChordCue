@@ -219,26 +219,82 @@ test('song creation fails if required fields are missing', function () {
     $response->assertSessionHasErrors(['title', 'artist', 'bpm', 'time_signature', 'visibility']);
 });
 
-test('song creation fails if bpm is outside normal range (40 - 240)', function () {
+test('song creation validates bpm boundary values (40 - 240)', function () {
     $user = User::factory()->create(['role' => 'user']);
 
+    // BPM 39 gagal (di bawah batas minimum 40)
     $responseLow = $this->actingAs($user)->post('/songs', [
-        'title' => 'Lagu BPM Rendah',
+        'title' => 'Lagu BPM 39',
         'artist' => 'Artis',
-        'bpm' => 30,
+        'bpm' => 39,
         'time_signature' => '4/4',
         'visibility' => 'public',
     ]);
     $responseLow->assertSessionHasErrors(['bpm']);
 
+    // BPM 241 gagal (di atas batas maksimum 240)
     $responseHigh = $this->actingAs($user)->post('/songs', [
-        'title' => 'Lagu BPM Tinggi',
+        'title' => 'Lagu BPM 241',
         'artist' => 'Artis',
-        'bpm' => 250,
+        'bpm' => 241,
         'time_signature' => '4/4',
         'visibility' => 'public',
     ]);
     $responseHigh->assertSessionHasErrors(['bpm']);
+
+    // BPM 40 berhasil (batas minimum)
+    $responseMin = $this->actingAs($user)->post('/songs', [
+        'title' => 'Lagu BPM 40',
+        'artist' => 'Artis',
+        'bpm' => 40,
+        'time_signature' => '4/4',
+        'visibility' => 'public',
+    ]);
+    $responseMin->assertSessionHasNoErrors();
+    $this->assertDatabaseHas('songs', ['title' => 'Lagu BPM 40', 'bpm' => 40]);
+
+    // BPM 240 berhasil (batas maksimum)
+    $responseMax = $this->actingAs($user)->post('/songs', [
+        'title' => 'Lagu BPM 240',
+        'artist' => 'Artis',
+        'bpm' => 240,
+        'time_signature' => '4/4',
+        'visibility' => 'public',
+    ]);
+    $responseMax->assertSessionHasNoErrors();
+    $this->assertDatabaseHas('songs', ['title' => 'Lagu BPM 240', 'bpm' => 240]);
+});
+
+test('song creation validates allowed time signatures (4/4, 3/4, 2/4, 6/8) and rejects removed 12/8', function () {
+    $user = User::factory()->create(['role' => 'user']);
+
+    // 12/8 ditolak
+    $response128 = $this->actingAs($user)->post('/songs', [
+        'title' => 'Lagu 12/8',
+        'artist' => 'Artis',
+        'bpm' => 120,
+        'time_signature' => '12/8',
+        'visibility' => 'public',
+    ]);
+    $response128->assertSessionHasErrors(['time_signature']);
+
+    // Nilai valid diterima
+    foreach (['4/4', '3/4', '2/4', '6/8'] as $timeSignature) {
+        $response = $this->actingAs($user)->post('/songs', [
+            'title' => "Lagu Birama {$timeSignature}",
+            'artist' => 'Artis',
+            'bpm' => 120,
+            'time_signature' => $timeSignature,
+            'visibility' => 'public',
+        ]);
+        $response->assertSessionHasNoErrors();
+        [$num, $den] = explode('/', $timeSignature);
+        $this->assertDatabaseHas('songs', [
+            'title' => "Lagu Birama {$timeSignature}",
+            'time_signature_numerator' => (int) $num,
+            'time_signature_denominator' => (int) $den,
+        ]);
+    }
 });
 
 test('user cannot exceed song quota limit', function () {

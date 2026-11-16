@@ -7,6 +7,14 @@ Format: `[Batch] Tanggal — Apa yang diubah, Kenapa, File mana`.
 
 ## Log Perubahan
 
+### [Alignment: BPM, Time Signature, & Offset Rules] 15 November 2026
+- **Apa:**
+  1. **BPM:** Mengembalikan dan menyelaraskan rentang BPM standar proyek menjadi **40 - 240** tanpa pengecualian (membatalkan limitasi sementara 60-140) pada modal `create-song-modal.blade.php` (`min="40" max="240"`, badge `40 - 240`), validasi backend `SongController.php` (`min:40|max:240`), dan test boundary `SongManagementTest.php`.
+  2. **Time Signature (Birama):** Menghapus opsi `12/8` dari dropdown modal `create-song-modal.blade.php` dan validasi controller `SongController.php` (`in:4/4,3/4,2/4,6/8`), sehingga hanya birama 4/4, 3/4, 2/4, dan 6/8 yang diizinkan.
+  3. **Offset (`backing_track_offset`):** Menetapkan batas minimum offset adalah 0 detik (offset negatif ditolak) dan meniadakan batas atas validasi (sehingga leluasa untuk kebutuhan pembelajaran; batas keras hanya kolom DB `DECIMAL(6,3)` hingga 999.999s). Aturan lama `between:-10.000,10.000` dinonaktifkan sebagai komentar di `SongAudioController.php` dan dites di `SongAudioOffsetTest.php`.
+- **Kenapa:** Penyelarasan aturan global (Source of Truth) di seluruh sistem: UI, validasi backend, database, dan automated tests.
+- **File:** `resources/views/components/create-song-modal.blade.php`, `app/Http/Controllers/SongController.php`, `app/Http/Controllers/SongAudioController.php`, `tests/Feature/SongManagementTest.php`, `tests/Feature/SongAudioOffsetTest.php`.
+
 ### [Tahap 4 - Batch 7: Autentikasi & Profil (`login.blade.php`, `register.blade.php`, `profile/edit.blade.php`)] 05 November 2026
 - **Apa:**
   1. Menyeragamkan kontainer kartu guest (`layouts/guest.blade.php`) menggunakan token `rounded-lg bg-surface-1 border border-subtle shadow-2xl` dengan padding responsif `p-24 sm:p-32`.

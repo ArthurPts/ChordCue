@@ -312,14 +312,17 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
 
 ---
 
-### BATCH 2: Simple Editor Page
-**Tujuan**: Membangun halaman Editor Simple (`/songs/{song}/editor/simple`) untuk mengelola section, baris lirik, penempatan chord di atas huruf lirik (`position`), serta bilah kontrol Backing Track dengan penyesuaian offset taktil (`font-mono` & fine-tune nudge buttons).
+### BATCH 2: Simple Editor Page [SELESAI / COMPLETED]
+**Tujuan**: Membangun halaman Editor Simple (`/songs/{song}/editor/simple`) untuk mengelola metadata lagu, upload/hapus backing track, section, baris lirik, penempatan chord di atas huruf lirik (`position`), serta bilah kontrol Backing Track dengan penyesuaian offset taktil sebaris (`font-mono` & fine-tune nudge buttons).
+
+- **Status**: **SELESAI (COMPLETED)**
 
 - **Scope**:
   - Route `GET /songs/{song}/editor/simple` dan view `resources/views/songs/editor-simple.blade.php`.
-  - Bilah Backing Track khusus:
-    - Input numerik taktil dalam `font-mono` (desimal 3 digit, step 0.001s).
-    - Tombol fine-tune nudge: `-100ms`, `-10ms`, `+10ms`, `+100ms`, dan `Reset` (kembali ke offset awal tersimpan).
+  - Bilah Backing Track & Metadata terpadu (panel atas ringkas `p-12`, tinggi input `h-[32px]` & tombol nudge `h-[28px]`):
+    - Input numerik taktil dalam `font-mono` (desimal 3 digit, step 0.001s, minimum `0.000` tanpa batas atas).
+    - Tombol fine-tune nudge sebaris: `-1s`, `-100ms`, `-10ms`, `+10ms`, `+100ms`, `+1s`, dan `Reset` (kembali ke offset awal tersimpan).
+    - Upload audio **khusus MP3** (`mimes:mp3`), kategori lagu (**Genre**, **Mood**, **Wilayah** via chip `Atur Kategori`), dan metadata lagu (`title`, `artist`, `default_key`, `bpm`, `time_signature`, `visibility`) disimpan bersama lewat **satu tombol `Simpan`** (`PATCH /songs/{song}` multipart + sinkronisasi `category_ids`); tombol `Hapus Audio` tetap tersedia via `DELETE /songs/{song}/backing-track`.
     - Terhubung secara AJAX ke `PATCH /songs/{song}/backing-track/offset`.
   - Implementasi controller AJAX: `SongSectionController`, `LyricLineController`, dan `ChordPlacementController`.
   - Drawer / sidebar master chord dengan pencarian instan (filter nama chord).
@@ -353,9 +356,8 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
   5. Rancang area lirik utama dengan slot huruf drag-and-drop dan drawer unplaced chords per baris.
   6. Tulis pengujian Pest di `tests/Feature/SimpleEditorTest.php` mencakup verifikasi render tombol nudge offset dan AJAX update.
 - **File Dibuat / Dimodifikasi**:
-  - *Modify*: `app/Http/Controllers/SongSectionController.php`, `app/Http/Controllers/LyricLineController.php`, `app/Http/Controllers/ChordPlacementController.php`, `routes/web.php`
-  - *Create*: `resources/views/songs/editor-simple.blade.php`
-  - *Create*: `tests/Feature/SimpleEditorTest.php`
+  - *Modify*: `app/Http/Controllers/SongController.php`, `app/Http/Controllers/SongAudioController.php`, `app/Http/Controllers/SongSectionController.php`, `app/Http/Controllers/LyricLineController.php`, `app/Http/Controllers/ChordPlacementController.php`, `routes/web.php`, `resources/js/app.js`, `resources/views/admin/songs/index.blade.php`, `resources/views/components/song-card.blade.php`, `resources/views/songs/player.blade.php`
+  - *Create*: `database/migrations/2026_11_15_000001_normalize_unsupported_time_signatures_in_songs_table.php`, `resources/js/simple-editor.js`, `resources/views/songs/editor-simple.blade.php`, `tests/Feature/SimpleEditorTest.php`
 - **Aturan & Skills yang Berlaku**:
   - `CHORDCUE_RULES.md` §2 (linear controller), §3 (PHPDoc Bahasa Indonesia), §6 (atomik koordinat & lockForUpdate), §8 (Alpine UI state, AJAX CSRF, teks Bahasa Indonesia), `design-rules.md` (Stage & Tape Deck, modal dialog tokens, `font-mono` untuk metrik offset), skill `frontend-design`.
 - **Adaptasi TTS**:
@@ -364,13 +366,13 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
   - Bilah Backing Track mengikuti estetika hardware tape recorder (indikator waktu offset taktil `font-mono`).
   - Chip chord menggunakan `bg-surface-2 border border-subtle text-accent font-mono text-xs px-8 py-4 rounded-sm`.
 - **Kriteria Penerimaan (Checklist Verifikasi)**:
-  - [ ] Bilah Backing Track menampilkan input numerik offset dalam `font-mono` dengan format desimal 3 angka (mis. `0.000` atau `2.350`).
-  - [ ] Tombol fine-tune nudge (`-100ms`, `-10ms`, `+10ms`, `+100ms`) menambah/mengurangi offset secara tepat sesuai nilai milidetik.
-  - [ ] Tombol `Reset` mengembalikan nilai offset ke nilai awal yang tersimpan.
-  - [ ] Perubahan offset mengirim request `PATCH /songs/{song}/backing-track/offset` dan tersimpan ke database.
-  - [ ] Drag-and-drop chord ke huruf berhasil menyimpan `position` dan mempertahankan `start_beat` lama jika sudah ada.
-  - [ ] Aksi "Lepas" berhasil mengubah `position` menjadi null dan chord berpindah ke daftar belum ditempatkan pada baris itu.
-  - [ ] Seluruh pengujian Pest di Batch 2 lulus 100%.
+  - [x] Bilah Backing Track menampilkan input numerik offset dalam `font-mono` dengan format desimal 3 angka (mis. `0.000` atau `2.350`), pemutar pratinjau audio **tema gelap kustom** (`togglePreviewAudio()`, `.ui-slider` + `.ui-progress`, tanpa kontrol `<audio controls>` bawaan browser), picker audio **MP3-only** (`accept=".mp3,audio/mpeg"`) yang tersimpan bersama metadata via satu tombol `Simpan` (`PATCH /songs/{song}` multipart) maupun endpoint `POST`/`DELETE /songs/{song}/backing-track`. (PASS: `SimpleEditorTest`)
+  - [x] Tombol fine-tune nudge sebaris (`-1s`, `-100ms`, `-10ms`, `+10ms`, `+100ms`, `+1s`) menambah/mengurangi offset secara tepat tanpa batas atas dan clamp minimum `0.000`. (PASS: `editor-simple.blade.php`, `simple-editor.js`, `SimpleEditorTest`)
+  - [x] Tombol `Reset` mengembalikan nilai offset ke nilai awal yang tersimpan. (PASS: `editor-simple.blade.php`, `simple-editor.js`)
+  - [x] Perubahan offset mengirim request `PATCH /songs/{song}/backing-track/offset` dan tersimpan ke database; metadata lagu + kategori (`Genre`, `Mood`, `Wilayah` via `category_ids` / `sync_categories`) + file MP3 opsional dapat diedit dan disimpan lewat satu tombol `Simpan` via `PATCH /songs/{song}` (BPM `40–240`, Time Signature dropdown hanya `4/4, 3/4, 2/4, 6/8`). (PASS: `SimpleEditorTest`, migrasi `12/8 -> 6/8` selesai)
+  - [x] Drag-and-drop chord ke huruf berhasil menyimpan `position` dan mempertahankan `start_beat` lama jika sudah ada, serta menampilkan konfirmasi timpa `409 Conflict` / `force: true`; chord yang sudah memiliki `position` langsung tampil di halaman Player walau `start_beat` masih `null` (khusus visualisasi lirik, sementara audio aba-aba tetap mengecek `start_beat !== null`). (PASS: `SimpleEditorTest`, `TimelineTest`, `PlayerPageTest`, JS code inspection)
+  - [x] Panel read-only "Chord yang belum digunakan" tampil di bawah Pustaka Chord (tersembunyi jika kosong), tombol "Lepas" dihapus dari badge placement Simple Editor (hanya "Hapus"), dan pemendekan baris `PATCH /lines/{line}` mengosongkan `position` atau menghapus placement bila `start_beat === null`. (PASS: `SimpleEditorTest`)
+  - [x] Seluruh pengujian Pest di Batch 2 lulus 100%. (PASS: `SimpleEditorTest` 10 passed, 134 assertions; seluruh Pest suite 112 passed, 1 skipped, 656 assertions)
 
 ---
 

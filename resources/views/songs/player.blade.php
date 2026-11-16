@@ -44,7 +44,7 @@
                 @can('update', $song)
                     <div class="flex items-center gap-8">
                         <a
-                            href="{{ route('songs.edit', $song) }}"
+                            href="{{ route('songs.editor.simple', $song) }}"
                             class="h-[32px] px-14 rounded-sm bg-surface-2 hover:bg-surface-3 border border-subtle text-ink text-caption font-medium inline-flex items-center gap-6 transition-colors"
                         >
                             <x-icon name="pencil" class="w-icon-chip h-icon-chip text-ink-secondary" />
@@ -145,7 +145,7 @@
         <!-- Bilah Kontrol Tape Deck Sticky (Transport, LCD Counter + LED Beat Strip, Tempo, Transpose, Mute) -->
         <div class="sticky top-8 z-20 bg-surface-1 border border-subtle rounded-lg p-16 sm:p-20 mb-24 space-y-16 shadow-lg">
             <!-- Baris 1: Tombol Putar/Berhenti & Layar LCD Counter -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-12">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-12 w-full min-w-0">
                 <!-- Transport Buttons -->
                 <div class="flex items-center gap-10 shrink-0">
                     <!-- Tombol Putar -->
@@ -177,13 +177,13 @@
                 </div>
 
                 <!-- Tampilan Layar LCD Tape Counter (Pesan Status Utama + Meter Birama/Beat + LED) -->
-                <div class="flex-1 min-h-[40px] bg-surface-2 border border-subtle rounded-sm px-16 py-8 flex items-center justify-between gap-12 font-mono text-body">
+                <div class="flex-1 min-w-0 min-h-[40px] bg-surface-2 border border-subtle rounded-sm px-16 py-8 flex items-center justify-between gap-12 font-mono text-body">
                     <div class="flex items-center gap-8 min-w-0">
                         <span
                             class="w-[8px] h-[8px] rounded-full shrink-0"
                             :class="isPlaying ? 'bg-success animate-pulse' : (isPlayReady ? (!hasCompletePlacements ? 'bg-warning' : 'bg-success') : 'bg-ink-tertiary')"
                         ></span>
-                        <span class="text-ink font-medium truncate" x-text="statusMessage">Memuat data lagu...</span>
+                        <span class="text-ink font-medium truncate" :title="statusMessage" x-text="statusMessage">Memuat data lagu...</span>
                     </div>
 
                     <!-- Indikator Bar/Beat & Strip LED Ketukan Birama -->
@@ -212,12 +212,12 @@
                 <div class="lg:col-span-6 space-y-6">
                     <div class="flex items-center justify-between text-caption">
                         <label class="font-medium text-ink-secondary">Tempo Sesi (BPM)</label>
-                        <span class="font-mono text-ink-tertiary">Bawaan: {{ $song->bpm ?? 80 }} BPM</span>
+                        <span class="font-mono text-ink-tertiary">40 - 240 · Bawaan: {{ $song->bpm ?? 80 }} BPM</span>
                     </div>
 
                     <div class="flex items-center gap-8">
                         <!-- Nudge BPM Buttons -->
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-4 shrink-0">
                             <button
                                 type="button"
                                 @click="nudgeBpm(-5)"
@@ -239,7 +239,7 @@
                         </div>
 
                         <!-- Slider BPM (DESIGN_SYSTEM 6.17: <progress> memakai rentang 0..200 agar sejajar presisi dengan range 40..240) -->
-                        <div class="ui-slider flex-1">
+                        <div class="ui-slider flex-1 min-w-0">
                             <progress
                                 class="ui-progress"
                                 max="200"
@@ -260,7 +260,7 @@
                         </div>
 
                         <!-- Nilai BPM & Nudge Up -->
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-4 shrink-0">
                             <button
                                 type="button"
                                 @click="nudgeBpm(1)"
@@ -476,7 +476,7 @@
                     @can('update', $song)
                         <div class="mt-20">
                             <a
-                                href="{{ route('songs.edit', $song) }}"
+                                href="{{ route('songs.editor.simple', $song) }}"
                                 class="h-[40px] px-20 rounded-sm bg-accent hover:bg-accent-hover text-accent-on text-nav-title font-medium inline-flex items-center gap-6 transition-colors"
                             >
                                 <x-icon name="pencil" class="w-icon-control h-icon-control" />

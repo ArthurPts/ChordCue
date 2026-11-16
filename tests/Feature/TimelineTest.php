@@ -161,11 +161,19 @@ test('tamu (guest) dapat mengakses timeline lagu publik dengan struktur §9.3 le
     expect($data['audio_ready'])->toBeTrue();
     expect($data['pending_chords'])->toBe(0);
 
-    // Pastikan HANYA placement lengkap yang dikembalikan (2 item, bukan 4)
+    // Pastikan seluruh placement yang memiliki position (walau start_beat masih null) dikembalikan urut position
+    // dan placement tanpa position (hanya start_beat) tetap dikecualikan
     $placements = $data['sections'][0]['lines'][0]['placements'];
-    expect($placements)->toHaveCount(2);
+    expect($placements)->toHaveCount(3);
     expect($placements[0]['chord']['name'])->toBe('C');
+    expect($placements[0]['position'])->toBe(0);
+    expect($placements[0]['start_beat'])->toBe(1);
     expect($placements[1]['chord']['name'])->toBe('Am');
+    expect($placements[1]['position'])->toBe(9);
+    expect($placements[1]['start_beat'])->toBe(5);
+    expect($placements[2]['chord']['name'])->toBe('C');
+    expect($placements[2]['position'])->toBe(15);
+    expect($placements[2]['start_beat'])->toBeNull();
 });
 
 test('otorisasi melindungi timeline lagu privat', function () {

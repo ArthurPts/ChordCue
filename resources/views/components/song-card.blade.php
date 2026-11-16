@@ -19,7 +19,7 @@
         $timeSignature = $timeSignature ?? ($song->time_signature_numerator . '/' . $song->time_signature_denominator);
         $categories = $categories ?? $song->categories;
         $url = $url !== '#' ? $url : ($song ? route('songs.show', $song) : route('chords.index'));
-        $editUrl = $editUrl !== '#' ? $editUrl : route('songs.edit', $song);
+        $editUrl = $editUrl !== '#' ? $editUrl : route('songs.editor.simple', $song);
         $deleteUrl = $deleteUrl !== '#' ? $deleteUrl : route('songs.destroy', $song);
     } else {
         $title = $title ?? 'Judul Lagu Contoh';

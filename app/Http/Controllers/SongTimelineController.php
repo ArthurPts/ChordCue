@@ -25,7 +25,9 @@ class SongTimelineController extends Controller
     }
 
     /**
-     * Mengambil struktur timeline lagu beserta section, baris, dan placement lengkap.
+     * Mengambil struktur timeline lagu beserta section, baris, dan placement chord berposisi.
+     * Chord yang sudah memiliki `position` tetap ditampilkan di Player meski `start_beat` masih null;
+     * `start_beat` hanya dipakai oleh mesin audio sebagai penjadwalan ketukan & aba-aba.
      * Mendukung pergeseran nada (transpose) read-only (-11 s/d +11 semitone).
      *
      * Fungsi ini digunakan pada:
@@ -53,11 +55,11 @@ class SongTimelineController extends Controller
             $sectionQuery->with(['lines' => function ($lineQuery) {
                 $lineQuery->orderBy('line_number');
                 $lineQuery->with(['placements' => function ($placementQuery) {
-                    // Hanya placement lengkap (position dan start_beat terisi) sesuai §5.6
+                    // Tampilkan semua placement yang sudah memiliki position di lirik (walau start_beat belum diatur)
                     $placementQuery->whereNotNull('position')
-                        ->whereNotNull('start_beat')
-                        ->orderBy('start_beat')
                         ->orderBy('position')
+                        ->orderByRaw('CASE WHEN start_beat IS NULL THEN 1 ELSE 0 END')
+                        ->orderBy('start_beat')
                         ->with('chord');
                 }]);
             }]);
@@ -121,7 +123,8 @@ class SongTimelineController extends Controller
                     }
 
                     $resolvedChord = $chordCache[$targetChordName];
-                    if ($resolvedChord) {
+                    // Kesiapan audio TTS hanya wajib untuk placement yang memiliki start_beat (dijadwalkan di AudioEngine)
+                    if ($resolvedChord && $placement->start_beat !== null) {
                         $distinctChordIds[$resolvedChord->id] = $resolvedChord;
                     }
 

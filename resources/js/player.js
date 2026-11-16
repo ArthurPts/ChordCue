@@ -137,15 +137,20 @@ export function chordsheetPlayer(config = {}) {
         },
 
         /**
-         * Memeriksa apakah lagu memiliki setidaknya satu placement lengkap (position & start_beat).
+         * Memeriksa apakah lagu memiliki setidaknya satu placement lengkap (position & start_beat)
+         * yang membutuhkan pemuatan dan penjadwalan audio aba-aba chord.
          */
         get hasCompletePlacements() {
             if (!this.timelineData || !this.timelineData.sections) return false;
             for (const section of this.timelineData.sections) {
                 if (section.lines) {
                     for (const line of section.lines) {
-                        if (line.placements && line.placements.length > 0) {
-                            return true;
+                        if (line.placements) {
+                            for (const placement of line.placements) {
+                                if (placement.position !== null && placement.start_beat !== null) {
+                                    return true;
+                                }
+                            }
                         }
                     }
                 }
