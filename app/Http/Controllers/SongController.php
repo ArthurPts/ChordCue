@@ -6,6 +6,7 @@ use App\Models\Artist;
 use App\Models\Category;
 use App\Models\Chord;
 use App\Models\Song;
+use App\Services\BeatGridBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -114,16 +115,57 @@ class SongController extends Controller
         Gate::authorize('update', $song);
 
         // 2. Query Database
+        $viewData = $this->prepareEditorViewData($song, 'position');
+
+        // 3. Response / Render View
+        return view('songs.editor-simple', $viewData);
+    }
+
+    /**
+     * Menampilkan halaman Beat Editor untuk mengatur ketukan global (start_beat)
+     * per baris lirik berbasis grid birama berlapis (§7.2) beserta kontrol metadata dan audio.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: GET /songs/{song}/editor/beat (songs.editor.beat)
+     * - resources/views/songs/editor-simple.blade.php (tombol switch Beat Editor)
+     */
+    public function editorBeat(Song $song, BeatGridBuilder $beatGridBuilder): View
+    {
+        // 1. Otorisasi & Validasi Input
+        Gate::authorize('update', $song);
+
+        // 2. Query Database
+        $viewData = $this->prepareEditorViewData($song, 'start_beat');
+        $beatsPerBar = max(1, (int) ($song->time_signature_numerator ?? 4));
+        $viewData['beatGrid'] = $beatGridBuilder->buildForSections($viewData['editorData']['sections'], $beatsPerBar);
+
+        // 3. Response / Render View
+        return view('songs.editor-beat', $viewData);
+    }
+
+    /**
+     * Menyusun payload data bersama untuk halaman Simple Editor dan Beat Editor.
+     *
+     * Fungsi ini digunakan pada:
+     * - SongController::editorSimple()
+     * - SongController::editorBeat()
+     *
+     * @return array<string, mixed>
+     */
+    private function prepareEditorViewData(Song $song, string $orderColumn = 'position'): array
+    {
+        $allowedOrder = in_array($orderColumn, ['position', 'start_beat'], true) ? $orderColumn : 'position';
+
         $song->load([
             'artist',
             'categories',
-            'sections' => function ($sectionQuery) {
+            'sections' => function ($sectionQuery) use ($allowedOrder) {
                 $sectionQuery->orderBy('sequence');
-                $sectionQuery->with(['lines' => function ($lineQuery) {
+                $sectionQuery->with(['lines' => function ($lineQuery) use ($allowedOrder) {
                     $lineQuery->orderBy('line_number');
-                    $lineQuery->with(['placements' => function ($placementQuery) {
-                        $placementQuery->orderByRaw('CASE WHEN position IS NULL THEN 1 ELSE 0 END')
-                            ->orderBy('position')
+                    $lineQuery->with(['placements' => function ($placementQuery) use ($allowedOrder) {
+                        $placementQuery->orderByRaw("CASE WHEN {$allowedOrder} IS NULL THEN 1 ELSE 0 END")
+                            ->orderBy($allowedOrder)
                             ->orderBy('id')
                             ->with('chord');
                     }]);
@@ -198,31 +240,30 @@ class SongController extends Controller
 
         $editorData = [
             'song' => [
-                'id'                        => $song->id,
-                'title'                     => $song->title,
-                'artist'                    => $song->artist ? $song->artist->name : '',
-                'default_key'               => $song->default_key ?? '',
-                'bpm'                       => (int) $song->bpm,
-                'time_signature'            => ($song->time_signature_numerator ?? 4) . '/' . ($song->time_signature_denominator ?? 4),
-                'visibility'                => $song->visibility,
-                'category_ids'              => $songCategoryIds,
-                'backing_track_path'        => $song->backing_track_path,
-                'backing_track_url'         => $backingTrackUrl,
-                'backing_track_offset'      => $song->backing_track_offset !== null ? (float) $song->backing_track_offset : 0.0,
+                'id'                   => $song->id,
+                'title'                => $song->title,
+                'artist'               => $song->artist ? $song->artist->name : '',
+                'default_key'          => $song->default_key ?? '',
+                'bpm'                  => (int) $song->bpm,
+                'time_signature'       => ($song->time_signature_numerator ?? 4) . '/' . ($song->time_signature_denominator ?? 4),
+                'visibility'           => $song->visibility,
+                'category_ids'         => $songCategoryIds,
+                'backing_track_path'   => $song->backing_track_path,
+                'backing_track_url'    => $backingTrackUrl,
+                'backing_track_offset' => $song->backing_track_offset !== null ? (float) $song->backing_track_offset : 0.0,
             ],
             'sections'   => $sectionsData,
             'chords'     => $chordsData,
             'categories' => $categoriesData,
         ];
 
-        // 3. Response / Render View
-        return view('songs.editor-simple', [
+        return [
             'song'       => $song,
             'chords'     => $chords,
             'artists'    => $artists,
             'categories' => $categories,
             'editorData' => $editorData,
-        ]);
+        ];
     }
 
     /**

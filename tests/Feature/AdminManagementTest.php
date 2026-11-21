@@ -72,6 +72,8 @@ test('admin can view song management table with stats and action buttons', funct
     $response->assertSee('Private');
     $response->assertSee('Kangen');
     $response->assertSee('Dewa 19');
+    $response->assertSee(route('songs.show', $song));
+    $response->assertSee(route('songs.editor.simple', $song));
     $response->assertSee('Putar');
     $response->assertSee('Edit');
     $response->assertSee('Hapus');

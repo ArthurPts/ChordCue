@@ -22,6 +22,7 @@ class ChordPlacementController extends Controller
      * Fungsi ini digunakan pada:
      * - Route: POST /lines/{line}/placements (lines.placements.store)
      * - resources/views/songs/editor-simple.blade.php
+     * - resources/views/songs/editor-beat.blade.php
      */
     public function store(Request $request, LyricLine $line): JsonResponse
     {
@@ -153,6 +154,7 @@ class ChordPlacementController extends Controller
      * Fungsi ini digunakan pada:
      * - Route: PATCH /placements/{placement} (placements.update)
      * - resources/views/songs/editor-simple.blade.php
+     * - resources/views/songs/editor-beat.blade.php
      */
     public function update(Request $request, ChordPlacement $placement): JsonResponse
     {
@@ -285,6 +287,7 @@ class ChordPlacementController extends Controller
      *
      * Fungsi ini digunakan pada:
      * - Route: POST /placements/{placement}/release (placements.release)
+     * - resources/views/songs/editor-beat.blade.php
      */
     public function release(Request $request, ChordPlacement $placement): JsonResponse
     {
@@ -326,6 +329,7 @@ class ChordPlacementController extends Controller
      * Fungsi ini digunakan pada:
      * - Route: DELETE /placements/{placement} (placements.destroy)
      * - resources/views/songs/editor-simple.blade.php
+     * - resources/views/songs/editor-beat.blade.php
      */
     public function destroy(ChordPlacement $placement): JsonResponse
     {

@@ -193,7 +193,7 @@
                                 <td class="py-14 px-16 sm:px-20 whitespace-nowrap text-right">
                                     <div class="inline-flex items-center gap-8">
                                         <!-- Putar -->
-                                        <a href="{{ route('chords.index') }}" class="h-[32px] px-12 rounded-sm bg-accent hover:bg-accent-hover text-accent-on text-xs font-bold inline-flex items-center gap-4 transition-colors shadow-sm">
+                                        <a href="{{ route('songs.show', $song) }}" class="h-[32px] px-12 rounded-sm bg-accent hover:bg-accent-hover text-accent-on text-xs font-bold inline-flex items-center gap-4 transition-colors shadow-sm">
                                             <x-icon name="play" class="w-3.5 h-3.5" />
                                             <span>Putar</span>
                                         </a>

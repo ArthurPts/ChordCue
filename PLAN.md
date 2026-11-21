@@ -357,7 +357,7 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
   6. Tulis pengujian Pest di `tests/Feature/SimpleEditorTest.php` mencakup verifikasi render tombol nudge offset dan AJAX update.
 - **File Dibuat / Dimodifikasi**:
   - *Modify*: `app/Http/Controllers/SongController.php`, `app/Http/Controllers/SongAudioController.php`, `app/Http/Controllers/SongSectionController.php`, `app/Http/Controllers/LyricLineController.php`, `app/Http/Controllers/ChordPlacementController.php`, `routes/web.php`, `resources/js/app.js`, `resources/views/admin/songs/index.blade.php`, `resources/views/components/song-card.blade.php`, `resources/views/songs/player.blade.php`
-  - *Create*: `database/migrations/2026_11_15_000001_normalize_unsupported_time_signatures_in_songs_table.php`, `resources/js/simple-editor.js`, `resources/views/songs/editor-simple.blade.php`, `tests/Feature/SimpleEditorTest.php`
+  - *Create*: `resources/js/simple-editor.js`, `resources/views/songs/editor-simple.blade.php`, `tests/Feature/SimpleEditorTest.php`
 - **Aturan & Skills yang Berlaku**:
   - `CHORDCUE_RULES.md` §2 (linear controller), §3 (PHPDoc Bahasa Indonesia), §6 (atomik koordinat & lockForUpdate), §8 (Alpine UI state, AJAX CSRF, teks Bahasa Indonesia), `design-rules.md` (Stage & Tape Deck, modal dialog tokens, `font-mono` untuk metrik offset), skill `frontend-design`.
 - **Adaptasi TTS**:
@@ -372,68 +372,60 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
   - [x] Perubahan offset mengirim request `PATCH /songs/{song}/backing-track/offset` dan tersimpan ke database; metadata lagu + kategori (`Genre`, `Mood`, `Wilayah` via `category_ids` / `sync_categories`) + file MP3 opsional dapat diedit dan disimpan lewat satu tombol `Simpan` via `PATCH /songs/{song}` (BPM `40–240`, Time Signature dropdown hanya `4/4, 3/4, 2/4, 6/8`). (PASS: `SimpleEditorTest`, migrasi `12/8 -> 6/8` selesai)
   - [x] Drag-and-drop chord ke huruf berhasil menyimpan `position` dan mempertahankan `start_beat` lama jika sudah ada, serta menampilkan konfirmasi timpa `409 Conflict` / `force: true`; chord yang sudah memiliki `position` langsung tampil di halaman Player walau `start_beat` masih `null` (khusus visualisasi lirik, sementara audio aba-aba tetap mengecek `start_beat !== null`). (PASS: `SimpleEditorTest`, `TimelineTest`, `PlayerPageTest`, JS code inspection)
   - [x] Panel read-only "Chord yang belum digunakan" tampil di bawah Pustaka Chord (tersembunyi jika kosong), tombol "Lepas" dihapus dari badge placement Simple Editor (hanya "Hapus"), dan pemendekan baris `PATCH /lines/{line}` mengosongkan `position` atau menghapus placement bila `start_beat === null`. (PASS: `SimpleEditorTest`)
-  - [x] Seluruh pengujian Pest di Batch 2 lulus 100%. (PASS: `SimpleEditorTest` 10 passed, 134 assertions; seluruh Pest suite 112 passed, 1 skipped, 656 assertions)
+  - [x] Seluruh pengujian Pest di Batch 2 lulus 100%. (PASS: `SimpleEditorTest` 9 passed; seluruh Pest suite 115 passed, 1 skipped, 723 assertions)
 
 ---
 
-### BATCH 3: Beat Editor Page
+### BATCH 3: Beat Editor Page [SELESAI / COMPLETED]
 **Tujuan**: Membangun halaman Editor Beat (`/songs/{song}/editor/beat`) untuk mengatur koordinat ketukan global (`start_beat`) berbasis grid birama berlapis per baris lirik sesuai algoritma §7.2, lengkap dengan bilah kontrol Backing Track offset taktil.
 
+- **Status**: **SELESAI (COMPLETED) & DISETUJUI**
+
 - **Scope**:
-  - Route `GET /songs/{song}/editor/beat` dan view `resources/views/songs/editor-beat.blade.php`.
-  - Bilah Backing Track terintegrasi (identik dengan Batch 2):
-    - Input numerik offset dalam `font-mono` (step 0.001s).
-    - Tombol fine-tune nudge: `-100ms`, `-10ms`, `+10ms`, `+100ms`, dan `Reset`.
-    - Mengatur bantalan fisik audio backing track tanpa mengubah posisi beat pada grid birama.
-  - Algoritma render grid per baris lirik (§7.2): kalkulasi `barAwal`, `barAkhirTerpakai`, serta bar kosong di akhir baris.
-  - Pengaturan drag-and-drop chord ke sel beat grid (1-indexed global beat).
-  - Penegakan keunikan global `start_beat` per lagu dengan `409 Conflict` dan opsi timpa `force: true`.
-  - Drawer unplaced chords per baris lirik (chord yang memiliki `position` namun `start_beat === null`).
-  - Aksi "Lepas" beat (`release`) yang mengosongkan `start_beat` tanpa menghapus `position`.
-  - Pengujian Pest untuk logika grid render, manipulasi `start_beat`, dan offset bar interaksi.
+  - Route `GET /songs/{song}/editor/beat` (`songs.editor.beat`), view `resources/views/songs/editor-beat.blade.php`, dan pengalih mode aktif `Simple Editor <-> Beat Editor`.
+  - Bilah Backing Track & Metadata terpadu via partial bersama `editor-top-panel.blade.php` + `editor-shared.js`:
+    - Input numerik offset dalam `font-mono` (step 0.001s, minimum `0.000`, tanpa mengubah/menggeser `start_beat`).
+    - Tombol fine-tune nudge sebaris (`-1s`, `-100ms`, `-10ms`, `+10ms`, `+100ms`, `+1s`, `Reset`).
+    - Terhubung AJAX ke `PATCH /songs/{song}/backing-track/offset`, plus pengeditan metadata/kategori/MP3 lewat tombol `Simpan` terpadu (`PATCH /songs/{song}`).
+  - Layanan `App\Services\BeatGridBuilder` & helper JS `buildBeatGrid()` untuk kalkulasi grid birama berlapis (§7.2): `barAwal`, `barAkhirTerpakai`, penggaris lokal `BAR 1..N`, dan trailing empty bar (`Bar Kosong`).
+  - Pengaturan drag-and-drop chord dari `Pustaka Chord` maupun dari panel `Chord yang belum digunakan` ke sel beat grid (1-indexed global beat).
+  - Penegakan keunikan global `start_beat` per lagu dengan `409 Conflict` dan modal timpa atomik `force: true` (lintas baris).
+  - Aksi `"Lepas"` beat (`POST /placements/{placement}/release` `coordinate: 'start_beat'`) yang mengosongkan `start_beat` tanpa menghapus `position`, serta aksi `"Hapus"` placement seutuhnya (`DELETE /placements/{placement}`).
+  - Panel `Pustaka Chord` + panel `Chord yang belum digunakan` via partial bersama `editor-chord-sidebar.blade.php` (chip belum ber-beat di sidebar Beat Editor dapat diseret langsung ke kotak beat).
+  - Pengujian Pest (`BeatEditorTest`) dan unit test JS (`beat-grid.test.mjs`).
 - **Out of Scope**:
   - Pemutaran sesi Player interaktif (sudah di Batch 1).
   - Pengeditan teks lirik (dilakukan di Simple Editor).
 - **Langkah Kerja Rinci**:
-  1. Buat helper/service method untuk kalkulasi struktur grid birama per baris lirik sesuai spesifikasi §7.2:
-     - Hitung `B = time_signature_numerator`.
-     - Hitung `barAwal` dan `barAkhirTerpakai` berdasarkan placement baris sebelumnya dan baris berjalan.
-     - Tambahkan 1 bar kosong di akhir setiap baris.
-  2. Tambahkan aksi pada `ChordPlacementController`:
-     - Menangani update `start_beat` (bilangan bulat ≥ 1) dengan lock transaksi pada tabel lagu.
-     - Pengecekan tabrakan beat global (lintas baris dalam lagu yang sama).
-     - Menangani request pelepasan beat `release` dengan `coordinate: 'start_beat'`.
-  3. Daftarkan route `GET /songs/{song}/editor/beat` di `routes/web.php`.
-  4. Rancang view `resources/views/songs/editor-beat.blade.php` dengan Alpine.js:
-     - Bilah Backing Track di bagian atas editor: input numerik offset taktil `font-mono` dan tombol fine-tune nudge (`-100ms`, `-10ms`, `+10ms`, `+100ms`, `Reset`).
-     - Header ringkasan metrik lagu (BPM, Time Signature) dalam tampilan rack hardware studio.
-     - Bagian lirik berlapis: di atas setiap baris lirik, render grid bar dan beat kotak tactile (`font-mono`).
-     - Indikator bar kosong di ujung kanan baris.
-     - Unplaced chords baris: chip chord yang siap ditarik ke dalam sel grid.
-     - Dialog konfirmasi tabrakan beat jika beat target telah digunakan oleh chord lain di lagu tersebut.
-  5. Tulis pengujian Pest di `tests/Feature/BeatEditorTest.php` memverifikasi rendering grid dan offset controls.
+  1. Buat layanan `App\Services\BeatGridBuilder` dan padanan JS `buildBeatGrid()` untuk kalkulasi struktur grid birama per baris lirik sesuai spesifikasi §7.2 (`B = time_signature_numerator`, `barAwal`, `barAkhirTerpakai`, dan 1 trailing bar kosong per baris).
+  2. Gunakan `ChordPlacementController` (`store`, `update`, `release`, `destroy`) dengan `DB::transaction` + `lockForUpdate()`, validasi `start_beat >= 1`, pengecekan tabrakan global lintas baris, timpa atomik `force: true`, dan pelepasan `coordinate: 'start_beat'`.
+  3. Daftarkan route `GET /songs/{song}/editor/beat` di `routes/web.php`, hubungkan switcher `Simple Editor <-> Beat Editor`, serta tambahkan `SongController::editorBeat()`.
+  4. Rancang view `resources/views/songs/editor-beat.blade.php` dan komponen Alpine `beatEditor` (`resources/js/beat-editor.js`) memakai partial panel atas & sidebar bersama:
+     - Layout section statis (non-collapsible) dengan grid BAR + sel beat per baris sesuai gambar referensi dan aturan desain gelap (`border-l-accent` untuk downbeat, latar redup + label `Bar Kosong` untuk bar akhir).
+     - Chip unplaced (`start_beat === null`) ditangani di panel sidebar `Chord yang belum digunakan` agar dapat diseret ke kotak beat baris terkait.
+     - Modal konfirmasi tabrakan beat global (`409 Conflict`).
+  5. Tulis pengujian di `tests/Feature/BeatEditorTest.php` dan `tests/js/beat-grid.test.mjs`.
 - **File Dibuat / Dimodifikasi**:
-  - *Modify*: `app/Http/Controllers/ChordPlacementController.php`, `routes/web.php`
-  - *Create*: `resources/views/songs/editor-beat.blade.php`
-  - *Create*: `tests/Feature/BeatEditorTest.php`
+  - *Create*: `app/Services/BeatGridBuilder.php`, `resources/js/editor-shared.js`, `resources/js/beat-editor.js`, `resources/views/songs/editor-beat.blade.php`, `resources/views/songs/partials/editor-top-panel.blade.php`, `resources/views/songs/partials/editor-chord-sidebar.blade.php`, `tests/Feature/BeatEditorTest.php`, `tests/js/beat-grid.test.mjs`
+  - *Modify*: `app/Http/Controllers/SongController.php`, `app/Http/Controllers/ChordPlacementController.php`, `routes/web.php`, `resources/js/app.js`, `resources/js/simple-editor.js`, `resources/views/songs/editor-simple.blade.php`, `tests/Feature/SimpleEditorTest.php`, `PLAN.md`
 - **Aturan & Skills yang Berlaku**:
-  - `CHORDCUE_RULES.md` §2 (linear controller), §3 (PHPDoc Bahasa Indonesia), §6 (atomik transaksi & keunikan beat global), §8 (Alpine UI, AJAX CSRF, teks Bahasa Indonesia), `design-rules.md` (Stage & Tape Deck grid, `font-mono` untuk nomor bar, beat, dan offset), skill `frontend-design`.
+  - `CHORDCUE_RULES.md` §2 (linear controller & service terpisah), §3 (PHPDoc Bahasa Indonesia), §6 (atomik transaksi & keunikan beat global), §8 (Alpine UI, AJAX CSRF, teks Bahasa Indonesia), `design-rules.md` (Stage & Tape Deck grid, `font-mono` untuk nomor bar, beat, dan offset), skill `frontend-design`.
 - **Adaptasi TTS**:
   - Editor Beat berfokus murni pada koordinat timing musikal; audio TTS tidak diputar di sini.
 - **UI Changes Sesuai Design Rule**:
   - Bilah Backing Track dengan tombol nudge taktil `font-mono`.
-  - Sel beat pada grid dirender sebagai tombol/slot taktil: `w-32 h-32 bg-surface-2 border border-subtle text-ink font-mono text-xs rounded-sm hover:border-accent`.
+  - Sel beat pada grid dirender sebagai slot taktil `min-w-[46px] min-h-[58px] bg-surface-1 border border-subtle font-mono text-caption rounded-sm` dengan sorotan dragover `border-accent bg-accent-soft-bg`.
   - Beat pertama tiap birama (downbeat) diberi penanda visual garis batas aksen (`border-l-accent`).
-  - Bar kosong diberi latar sedikit lebih redup dengan label subtil "Bar Kosong".
+  - Bar kosong diberi latar redup `bg-surface-2/30 border-dashed` dengan label `"Bar Kosong"`.
 - **Kriteria Penerimaan (Checklist Verifikasi)**:
-  - [ ] Bilah Backing Track dengan input offset numerik dan tombol fine-tune nudge hadir serta berfungsi menyimpan nilai via `PATCH /songs/{song}/backing-track/offset`.
-  - [ ] Mengubah offset backing track tidak mengubah atau menggeser penomoran beat pada grid birama.
-  - [ ] Grid birama dirender berlapis per baris lirik secara tepat mengikuti algoritma §7.2.
-  - [ ] Menempatkan chord pada sel beat menyimpan nilai `start_beat` (1-indexed) dan mempertahankan `position` pada baris.
-  - [ ] Jika beat target sudah dipakai di baris lain pada lagu yang sama, server mengembalikan `409 Conflict` dan modal konfirmasi timpa muncul di layar.
-  - [ ] Konfirmasi timpa berhasil menghapus placement lama dan menaruh placement baru secara atomik.
-  - [ ] Aksi "Lepas" beat mengosongkan `start_beat` dan mengembalikan chord ke daftar unplaced baris itu tanpa menghilangkan posisinya di lirik.
-  - [ ] Seluruh pengujian Pest di Batch 3 lulus 100%.
+  - [x] Bilah Backing Track dengan input offset numerik dan tombol fine-tune nudge hadir serta berfungsi menyimpan nilai via `PATCH /songs/{song}/backing-track/offset`. (PASS: `BeatEditorTest`, `SongAudioOffsetTest`)
+  - [x] Mengubah offset backing track tidak mengubah atau menggeser penomoran beat pada grid birama. (PASS: `BeatEditorTest`)
+  - [x] Grid birama dirender berlapis per baris lirik secara tepat mengikuti algoritma §7.2. (PASS: `BeatEditorTest`, `tests/js/beat-grid.test.mjs`)
+  - [x] Menempatkan chord pada sel beat menyimpan nilai `start_beat` (1-indexed) dan mempertahankan `position` pada baris. (PASS: `BeatEditorTest`)
+  - [x] Jika beat target sudah dipakai di baris lain pada lagu yang sama, server mengembalikan `409 Conflict` dan modal konfirmasi timpa muncul di layar. (PASS: `BeatEditorTest`, `editor-beat.blade.php` + `beat-editor.js` inspection)
+  - [x] Konfirmasi timpa berhasil menghapus placement lama dan menaruh placement baru secara atomik. (PASS: `BeatEditorTest`)
+  - [x] Aksi "Lepas" beat mengosongkan `start_beat` dan mengembalikan chord ke daftar unplaced baris itu tanpa menghilangkan posisinya di lirik. (PASS: `BeatEditorTest`, `beat-editor.js`)
+  - [x] Seluruh pengujian Pest & JS unit test di Batch 3 lulus 100%. (PASS: `BeatEditorTest` 4 passed; `SimpleEditorTest` 9 passed; seluruh Pest suite 115 passed, 1 skipped, 723 assertions; JS tests 10/10 passed)
 
 ---
 

@@ -123,6 +123,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
     Route::get('/songs/create', [SongController::class, 'create'])->name('songs.create');
     Route::get('/songs/{song}/editor/simple', [SongController::class, 'editorSimple'])->name('songs.editor.simple');
+    Route::get('/songs/{song}/editor/beat', [SongController::class, 'editorBeat'])->name('songs.editor.beat');
     Route::get('/songs/{song}/edit', [SongController::class, 'edit'])->name('songs.edit');
     Route::patch('/songs/{song}', [SongController::class, 'update'])->name('songs.update');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');

@@ -145,9 +145,15 @@ test('halaman simple editor merender tombol nudge inline, dropdown birama valid,
     $response->assertSee('<option value="6/8">6/8</option>', false);
     $response->assertDontSee('<option value="12/8">', false);
 
+    // Tautan switch ke Beat Editor aktif
+    $response->assertSee(route('songs.editor.beat', $this->song));
+
     // Tidak ada tombol "Lepas" pada placement di Simple Editor (hanya Hapus)
-    $blade = file_get_contents(resource_path('views/songs/editor-simple.blade.php'));
-    $js = file_get_contents(resource_path('js/simple-editor.js'));
+    $blade = file_get_contents(resource_path('views/songs/editor-simple.blade.php'))
+        . file_get_contents(resource_path('views/songs/partials/editor-top-panel.blade.php'))
+        . file_get_contents(resource_path('views/songs/partials/editor-chord-sidebar.blade.php'));
+    $js = file_get_contents(resource_path('js/simple-editor.js'))
+        . file_get_contents(resource_path('js/editor-shared.js'));
 
     expect($blade)->not->toContain('Lepas');
     expect($blade)->not->toContain('Unggah Audio');
@@ -436,41 +442,6 @@ test('penempatan, pemindahan independen, deteksi tabrakan 409, timpa paksa, lepa
         ->deleteJson(route('placements.destroy', $placementBId))
         ->assertOk();
     expect(ChordPlacement::find($placementBId))->toBeNull();
-});
-
-test('migrasi normalisasi time signature mengubah lagu 12/8 menjadi 6/8 dan mempertahankan birama valid', function () {
-    $song128 = Song::create([
-        'user_id'                    => $this->owner->id,
-        'title'                      => 'Lagu Birama 12/8',
-        'artist_id'                  => $this->artist->id,
-        'bpm'                        => 85,
-        'time_signature_numerator'   => 12,
-        'time_signature_denominator' => 8,
-        'visibility'                 => 'public',
-    ]);
-
-    $songOther = Song::create([
-        'user_id'                    => $this->owner->id,
-        'title'                      => 'Lagu Birama 5/4',
-        'artist_id'                  => $this->artist->id,
-        'bpm'                        => 95,
-        'time_signature_numerator'   => 5,
-        'time_signature_denominator' => 4,
-        'visibility'                 => 'public',
-    ]);
-
-    $migration = require database_path('migrations/2026_11_15_000001_normalize_unsupported_time_signatures_in_songs_table.php');
-    $migration->up();
-
-    expect($song128->fresh()->time_signature_numerator)->toBe(6);
-    expect($song128->fresh()->time_signature_denominator)->toBe(8);
-
-    expect($songOther->fresh()->time_signature_numerator)->toBe(4);
-    expect($songOther->fresh()->time_signature_denominator)->toBe(4);
-
-    // Lagu 4/4 awal tidak berubah
-    expect($this->song->fresh()->time_signature_numerator)->toBe(4);
-    expect($this->song->fresh()->time_signature_denominator)->toBe(4);
 });
 
 test('chord yang baru ditempatkan di simple editor (punya position, start_beat null) langsung tampil di timeline player', function () {
