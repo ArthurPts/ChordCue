@@ -33,7 +33,7 @@ class PronunciationGenerator
      * - generate('A/C#')     => 'A over C sharp'
      * - generate('G/A')      => 'G over A'
      * - generate('F#m7b5')   => 'F sharp minor 7 flat 5'
-     * - generate('Cmaj7#11') => 'C major 7 sharp 11'
+     * - generate('Cmaj7#11') => 'C majj 7 sharp 11'
      * - generate('C7#9b13')  => 'C 7 sharp 9 flat 13'
      *
      * @param string $chordName Nama chord (mis. 'A', 'F#m7', 'G/B')

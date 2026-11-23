@@ -32,11 +32,22 @@ class GenerateChordAudio implements ShouldQueue
         return [5, 20];
     }
 
+    /**
+     * Membentuk nama file MP3 yang aman untuk sistem berkas dari nama chord.
+     *
+     * Fungsi ini digunakan pada:
+     * - GenerateChordAudio::handle
+     * - Pengujian unit MusicServicesTest
+     */
     public static function fileName(string $chordName): string
     {
-        // "F#m" -> "fsharpm", "Bb" -> "bb" (lowercase supaya aman di Windows/macOS)
-        return Str::of($chordName)->replace('#', 'sharp')->lower()
-            ->replaceMatches('/[^a-z0-9]+/', '')->toString();
+        // "F#m" -> "fsharpm", "Bb" -> "bb", "G/B" -> "goverb" (cegah tabrakan dengan "Gb")
+        return Str::of($chordName)
+            ->replace('#', 'sharp')
+            ->replace('/', 'over')
+            ->lower()
+            ->replaceMatches('/[^a-z0-9]+/', '')
+            ->toString();
     }
 
     public function handle(): void
@@ -82,7 +93,8 @@ class GenerateChordAudio implements ShouldQueue
 
     /**
      * Menyesuaikan teks pelafalan untuk edge-tts agar huruf nada 'A' tetap
-     * dilafalkan sebagai /eɪ/ dan bukan artikel bahasa Inggris /ə/ ("uh").
+     * dilafalkan sebagai /eɪ/ (bukan artikel /ə/), kata 'major'/'maj' menjadi
+     * 'majj' (/mædʒ/), dan kata 'sus' menjadi 'suss'.
      *
      * Fungsi ini digunakan pada:
      * - GenerateChordAudio::handle
@@ -97,6 +109,12 @@ class GenerateChordAudio implements ShouldQueue
 
         // Kembalikan teks lama yang memakai 'Ae' sebagai token nada ke 'A'
         $normalizedText = preg_replace('/\bAe\b/', 'A', $trimmedText) ?? $trimmedText;
+
+        // Ubah token 'major' atau 'maj' menjadi 'majj' agar edge-tts melafalkan /mædʒ/
+        $normalizedText = preg_replace('/\bmaj(?:or)?\b/i', 'majj', $normalizedText) ?? $normalizedText;
+
+        // Ubah token 'sus' menjadi 'suss' agar edge-tts tidak mengejanya 'S U S'
+        $normalizedText = preg_replace('/\bsus\b/i', 'suss', $normalizedText) ?? $normalizedText;
 
         // Sisipkan koma setelah huruf nada tunggal 'A' bila diikuti kata lain
         // (mis. "A minor" -> "A, minor", "G over A flat" -> "G over A, flat")
