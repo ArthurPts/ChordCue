@@ -152,8 +152,8 @@ test('halaman simple editor merender tombol nudge inline, dropdown birama valid,
     $blade = file_get_contents(resource_path('views/songs/editor-simple.blade.php'))
         . file_get_contents(resource_path('views/songs/partials/editor-top-panel.blade.php'))
         . file_get_contents(resource_path('views/songs/partials/editor-chord-sidebar.blade.php'));
-    $js = file_get_contents(resource_path('js/simple-editor.js'))
-        . file_get_contents(resource_path('js/editor-shared.js'));
+    $js = file_get_contents(resource_path('js/alpine/simple-editor.js'))
+        . file_get_contents(resource_path('js/alpine/editor-shared.js'));
 
     expect($blade)->not->toContain('Lepas');
     expect($blade)->not->toContain('Unggah Audio');

@@ -106,7 +106,7 @@
                         {{-- 5-Column Grid --}}
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-10 sm:gap-12">
                             @foreach ($chords as $chord)
-                                <x-chord-card
+                                <x-chords.chord-card
                                     :chord="$chord"
                                     :selected="$selectedChord && $selectedChord->id === $chord->id"
                                 />
@@ -202,8 +202,8 @@
 
         {{-- Admin Modals --}}
         @if ($isAdmin)
-            <x-create-chord-modal />
-            <x-edit-chord-modal />
+            <x-chords.create-chord-modal />
+            <x-chords.edit-chord-modal />
         @endif
     </div>
 </x-app-layout>

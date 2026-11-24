@@ -130,7 +130,7 @@
             @if (isset($songs) && $songs->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 md:gap-20">
                     @foreach ($songs as $song)
-                        <x-song-card :song="$song" />
+                        <x-songs.song-card :song="$song" />
                     @endforeach
                 </div>
             @elseif (request()->hasAny(['q', 'artist_id', 'genre', 'mood', 'location']))
@@ -149,7 +149,7 @@
             @else
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 md:gap-20">
                     @for ($i = 0; $i < 6; $i++)
-                        <x-song-card />
+                        <x-songs.song-card />
                     @endfor
                 </div>
             @endif

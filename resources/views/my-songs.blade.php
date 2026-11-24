@@ -123,7 +123,7 @@
                     @if (isset($songs) && $songs->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16 md:gap-20">
                             @foreach ($songs as $song)
-                                <x-song-card :song="$song" :can-manage="true" />
+                                <x-songs.song-card :song="$song" :can-manage="true" />
                             @endforeach
                         </div>
                     @else
@@ -152,6 +152,6 @@
         @endif
 
         <!-- Reusable Modal Buat Lagu Baru -->
-        <x-create-song-modal :artists="$artists ?? []" />
+        <x-songs.create-song-modal :artists="$artists ?? []" />
     </div>
 </x-app-layout>

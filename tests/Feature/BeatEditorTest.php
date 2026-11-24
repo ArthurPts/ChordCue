@@ -127,7 +127,7 @@ test('halaman beat editor merender switcher mode, kontrol offset, pustaka chord,
     $blade = file_get_contents(resource_path('views/songs/editor-beat.blade.php'))
         . file_get_contents(resource_path('views/songs/partials/editor-top-panel.blade.php'))
         . file_get_contents(resource_path('views/songs/partials/editor-chord-sidebar.blade.php'));
-    $js = file_get_contents(resource_path('js/beat-editor.js'));
+    $js = file_get_contents(resource_path('js/alpine/beat-editor.js'));
 
     expect($blade)->toContain('border-l-accent');
     expect($blade)->toContain('startDragUnbeatedPlacement');

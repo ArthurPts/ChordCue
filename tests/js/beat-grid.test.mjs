@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { barOfBeat, buildBeatGrid } from '../../resources/js/beat-editor.js';
+import { barOfBeat, buildBeatGrid } from '../../resources/js/alpine/beat-editor.js';
 
 test('barOfBeat menghitung nomor bar global 1-indexed dengan benar', () => {
     assert.equal(barOfBeat(1, 4), 1);

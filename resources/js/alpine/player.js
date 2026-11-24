@@ -1,4 +1,4 @@
-import { AudioEngine } from './audio/audio-engine';
+import { AudioEngine } from '../audio/audio-engine';
 
 /**
  * Komponen Alpine.js untuk Halaman Player Latihan ChordCue.

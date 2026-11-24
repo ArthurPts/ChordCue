@@ -237,7 +237,7 @@ test('lagu dengan lirik tetapi tanpa chord placements tetap menampilkan lirik ut
     $response->assertSee('Menanti senja yang tak kunjung tiba');
 
     // 2. Pesan panjang tidak digandakan dalam kartu lirik; ditempatkan di status utama (player.js) menggantikan "Chord belum lengkap"
-    $playerJs = file_get_contents(resource_path('js/player.js'));
+    $playerJs = file_get_contents(resource_path('js/alpine/player.js'));
     expect($playerJs)->toContain('Lagu ini belum memiliki penempatan chord yang lengkap. Pemutaran aba-aba chord dinonaktifkan.');
     expect($playerJs)->not->toContain("'Chord belum lengkap'");
 
@@ -264,7 +264,7 @@ test('slider bpm menyelaraskan progress fill (0..200) secara presisi dengan rang
 
 test('metronom tetap dapat diputar meski lagu belum memiliki penempatan chord, sementara chorded song tetap mewajibkan audio chord siap', function () {
     $audioEngineJs = file_get_contents(resource_path('js/audio/audio-engine.js'));
-    $playerJs = file_get_contents(resource_path('js/player.js'));
+    $playerJs = file_get_contents(resource_path('js/alpine/player.js'));
 
     // Pastikan AudioEngine memiliki penjagaan canPlay() sebelum memulai playback/metronom
     expect($audioEngineJs)->toContain('canPlay()');
@@ -347,7 +347,7 @@ test('timeline yang dikonsumsi player menampilkan chord berposisi meski start_be
     expect($placements[2]['start_beat'])->toEqual(5);
 
     // hasCompletePlacements tetap mengecek start_beat !== null agar chord tanpa beat tidak dianggap siap bersuara
-    $playerJs = file_get_contents(resource_path('js/player.js'));
+    $playerJs = file_get_contents(resource_path('js/alpine/player.js'));
     expect($playerJs)->toContain('placement.position !== null && placement.start_beat !== null');
 });
 
@@ -396,7 +396,7 @@ test('konfigurasi disk public memakai path relatif /storage agar bebas error COR
 
 test('player memasangkan unit chord di atas potongan lirik presisi dan AudioEngine menunda AudioContext hingga klik Putar', function () {
     $viewContent = file_get_contents(resource_path('views/songs/player.blade.php'));
-    $playerJs = file_get_contents(resource_path('js/player.js'));
+    $playerJs = file_get_contents(resource_path('js/alpine/player.js'));
     $engineJs = file_get_contents(resource_path('js/audio/audio-engine.js'));
 
     // Chord dan lirik dirender dalam unit vertikal berpasangan tanpa spasi terpisah yang menggeser posisi
@@ -421,7 +421,7 @@ test('player memasangkan unit chord di atas potongan lirik presisi dan AudioEngi
 
 test('sinkronisasi offset, deteksi akhir ucapan TTS, dan konfigurasi threshold/trim/cue_margin terhubung ke player serta lirik tetap putih', function () {
     $viewContent = file_get_contents(resource_path('views/songs/player.blade.php'));
-    $playerJs = file_get_contents(resource_path('js/player.js'));
+    $playerJs = file_get_contents(resource_path('js/alpine/player.js'));
     $engineJs = file_get_contents(resource_path('js/audio/audio-engine.js'));
 
     // 1. Konfigurasi cue_margin_ms (1000 ms), speech_silence_threshold_db (-40 dBFS) & chord_cue_trim_ms diteruskan ke JS Player
