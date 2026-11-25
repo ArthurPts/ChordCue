@@ -1,10 +1,3 @@
-@props([
-    'mode' => 'simple',
-    'song',
-    'artists',
-    'categories',
-])
-
 <!-- Baris Navigasi Atas & Pengalih Mode -->
 <div class="flex flex-wrap items-center justify-between gap-8">
     <a

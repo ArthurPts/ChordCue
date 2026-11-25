@@ -274,6 +274,7 @@
             </div>
 
             @include('songs.partials.editor-chord-sidebar', [
+                'mode' => 'simple',
                 'hint' => 'Seret chord ke atas huruf lirik',
             ])
         </div>

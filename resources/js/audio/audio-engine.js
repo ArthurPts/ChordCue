@@ -505,6 +505,38 @@ export class AudioEngine {
     }
 
     /**
+     * Mengembalikan cuplikan read-only jam audio aktif untuk modul auto-scroll.
+     *
+     * @returns {Object}
+     */
+    getClockSnapshot() {
+        const lastChord = this.scheduledChords.length > 0
+            ? this.scheduledChords[this.scheduledChords.length - 1]
+            : null;
+
+        const chordAnchors = [];
+        for (const c of this.scheduledChords) {
+            chordAnchors.push({
+                placementId: c.placementId,
+                start_beat: c.start_beat,
+            });
+        }
+
+        return {
+            isPlaying: this.isPlaying,
+            currentTime: this.audioContext ? this.audioContext.currentTime : 0,
+            beatOneTime: this.mulaiLagu,
+            bpm: this.bpm,
+            endBeat: this.endBeat,
+            songEndTime: this.waktuSelesaiLagu,
+            isContinuousMetronome: this.isContinuousMetronome,
+            hasChords: this.scheduledChords.length > 0,
+            lastChordSpeechEndTime: lastChord ? (lastChord.waktuMulai + lastChord.duration) : null,
+            chordAnchors,
+        };
+    }
+
+    /**
      * Menyesuaikan nilai offset backing track secara dinamis.
      * Jika sesi sedang berjalan, anchor penjadwalan dikalibrasi ulang tanpa memutus audio context.
      *
@@ -749,14 +781,12 @@ export class AudioEngine {
             const nextBeat = nextPlacement ? nextPlacement.start_beat : endBeat + 1;
             const waktuSelesaiAktif = this.mulaiLagu + (nextBeat - 1) * spb;
 
-            let hasScheduledAudio = false;
             if (buffer && scheduleTime < this.waktuSelesaiLagu) {
                 const source = this.audioContext.createBufferSource();
                 source.buffer = buffer;
                 source.connect(this.chordVoiceGain);
                 source.start(scheduleTime);
                 this.activeSources.push(source);
-                hasScheduledAudio = true;
             }
 
             this.scheduledChords.push({
@@ -765,12 +795,10 @@ export class AudioEngine {
                 audioUrl: url,
                 start_beat: placement.start_beat,
                 buffer: buffer,
-                rawDuration: buffer ? buffer.duration : null,
                 duration: duration,
                 waktuMulai: scheduleTime,
                 waktuBeat: waktuBeat,
                 waktuSelesaiAktif: waktuSelesaiAktif,
-                hasPlayedAudio: hasScheduledAudio,
                 currentState: 'normal',
             });
 
@@ -978,7 +1006,6 @@ export class AudioEngine {
                     this.onChordStateChange(c.placementId, 'normal');
                 }
                 c.currentState = 'normal';
-                c.hasPlayedAudio = false;
             }
         }
 

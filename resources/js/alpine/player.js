@@ -1,4 +1,9 @@
 import { AudioEngine } from '../audio/audio-engine';
+import {
+    AutoScrollController,
+    readStoredAutoScroll,
+    writeStoredAutoScroll,
+} from '../player/auto-scroll';
 
 /**
  * Komponen Alpine.js untuk Halaman Player Latihan ChordCue.
@@ -26,7 +31,6 @@ export function chordsheetPlayer(config = {}) {
         // Status Playback
         isPlaying: false,
         isStarting: false,
-        playbackState: 'stopped', // 'stopped' | 'preloading' | 'playing'
         statusMessage: 'Memuat data lagu...',
         currentBeat: 0,
         currentBar: 0,
@@ -34,11 +38,12 @@ export function chordsheetPlayer(config = {}) {
         timeSignatureNumerator: Number(config.initialTimeSigNum || 4),
         timeSignatureDenominator: Number(config.initialTimeSigDen || 4),
 
-        // Status Mute Jalur Audio
+        // Status Mute Jalur Audio & Gulir Otomatis
         isMetronomeMuted: false,
         isChordVoiceMuted: false,
         isBackingTrackMuted: false,
         wasBackingTrackMutedBeforeTempoChange: false,
+        autoScrollEnabled: readStoredAutoScroll(),
 
         // Data Timeline & Kesiapan Audio
         timelineData: null,
@@ -58,13 +63,20 @@ export function chordsheetPlayer(config = {}) {
         // Status Visual Penempatan Chord { [placementId]: 'normal' | 'active' | 'played' }
         chordStates: {},
 
-        // Instance Audio Engine
+        // Instance Audio Engine & Auto-Scroll
         engine: null,
+        autoScroller: null,
 
         /**
-         * Inisialisasi komponen Alpine dan AudioEngine.
+         * Inisialisasi komponen Alpine, AudioEngine, dan AutoScrollController.
          */
         init() {
+            this.autoScroller = new AutoScrollController({
+                getClock: () => (this.engine ? this.engine.getClockSnapshot() : null),
+                getTapeDeckEl: () => this.$refs.tapeDeck || null,
+                getChordSheetEl: () => this.$refs.chordSheet || null,
+            });
+
             this.engine = new AudioEngine({
                 cueMarginMs: this.cueMarginMs,
                 speechSilenceThresholdDb: this.speechSilenceThresholdDb,
@@ -101,9 +113,14 @@ export function chordsheetPlayer(config = {}) {
                     }
                 },
                 onPlaybackStateChange: (state) => {
-                    this.playbackState = state;
                     this.isPlaying = (state === 'playing');
+                    if (state === 'playing' && this.autoScrollEnabled && this.autoScroller) {
+                        this.autoScroller.start();
+                    }
                     if (state === 'stopped') {
+                        if (this.autoScroller) {
+                            this.autoScroller.stop();
+                        }
                         this.isCountIn = false;
                         this.currentBeat = 0;
                         this.currentBar = 0;
@@ -111,14 +128,29 @@ export function chordsheetPlayer(config = {}) {
                     }
                 },
                 onSongEnded: () => {
+                    if (this.autoScroller) {
+                        this.autoScroller.stop();
+                    }
                     this.statusMessage = 'Lagu selesai';
                     this.isPlaying = false;
-                    this.playbackState = 'stopped';
                     this.isCountIn = false;
                 },
             });
 
             this.fetchTimeline();
+        },
+
+        /**
+         * Membersihkan timer, listener auto-scroll, dan audio saat komponen dilepas.
+         */
+        destroy() {
+            this.stopPolling();
+            if (this.autoScroller) {
+                this.autoScroller.destroy();
+            }
+            if (this.engine) {
+                this.engine.stop();
+            }
         },
 
         /**
@@ -374,7 +406,6 @@ export function chordsheetPlayer(config = {}) {
             this.isPreloading = true;
             this.isPreloaded = false;
             this.preloadFailed = false;
-            this.playbackState = 'preloading';
             this.updateStatusMessage();
 
             try {
@@ -398,7 +429,6 @@ export function chordsheetPlayer(config = {}) {
                 this.preloadFailed = true;
             } finally {
                 this.isPreloading = false;
-                this.playbackState = 'stopped';
                 this.updateStatusMessage();
             }
         },
@@ -439,7 +469,6 @@ export function chordsheetPlayer(config = {}) {
                 const started = await this.engine.play();
                 if (!started) {
                     this.isPlaying = false;
-                    this.playbackState = 'stopped';
                     this.updateStatusMessage();
                 }
             } finally {
@@ -451,12 +480,14 @@ export function chordsheetPlayer(config = {}) {
          * Menghentikan pemutaran audio dan mereset visual chord sheet.
          */
         stop() {
+            if (this.autoScroller) {
+                this.autoScroller.stop();
+            }
             if (this.engine) {
                 this.engine.stop();
             }
             this.chordStates = {};
             this.isPlaying = false;
-            this.playbackState = 'stopped';
             this.updateStatusMessage();
         },
 
@@ -550,6 +581,16 @@ export function chordsheetPlayer(config = {}) {
             if (this.engine) {
                 this.engine.setMuteBackingTrack(this.isBackingTrackMuted);
             }
+        },
+
+        /**
+         * Mengaktifkan/menonaktifkan Gulir Otomatis sebelum pemutaran dimulai.
+         * Terkunci selama lagu sedang diputar dan disimpan ke localStorage.
+         */
+        toggleAutoScroll() {
+            if (this.isPlaying) return;
+            this.autoScrollEnabled = !this.autoScrollEnabled;
+            writeStoredAutoScroll(this.autoScrollEnabled);
         },
 
         /**

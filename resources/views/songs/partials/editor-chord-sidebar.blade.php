@@ -1,8 +1,3 @@
-@props([
-    'mode' => 'simple',
-    'hint' => 'Seret chord ke atas huruf lirik',
-])
-
 <!-- KOLOM KANAN (4 cols): Pustaka Chord + Chord yang belum digunakan di bawahnya -->
 <aside class="lg:col-span-4 lg:sticky lg:top-[80px] space-y-16">
     <!-- Panel Pustaka Chord -->

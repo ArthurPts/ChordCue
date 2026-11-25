@@ -115,6 +115,11 @@ beforeEach(function () {
     ]);
 });
 
+afterEach(function () {
+    // Bersihkan file MP3 uji yang mungkin dibuat saat pengujian timeline/transpose
+    Storage::disk('public')->deleteDirectory('chords/audio');
+});
+
 test('tamu (guest) dapat mengakses timeline lagu publik dengan struktur §9.3 lengkap', function () {
     $response = $this->getJson(route('songs.timeline', $this->publicSong));
 
@@ -208,6 +213,8 @@ test('otorisasi melindungi timeline lagu privat', function () {
 });
 
 test('parameter transpose menggeser nada dasar dan chord secara tepat', function () {
+    Queue::fake();
+
     // Transpose +2 semitone: Key C => D; Chord C => D; Chord Am => Bm
     $response = $this->getJson(route('songs.timeline', [
         'song'      => $this->publicSong,

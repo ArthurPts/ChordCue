@@ -1,6 +1,5 @@
 @props([
     'chord',
-    'selected' => false,
 ])
 
 <div

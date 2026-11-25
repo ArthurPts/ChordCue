@@ -7,6 +7,7 @@ use App\Models\LyricLine;
 use App\Models\Song;
 use App\Models\SongSection;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -352,6 +353,8 @@ test('timeline yang dikonsumsi player menampilkan chord berposisi meski start_be
 });
 
 test('transpose sesi di timeline player tidak mengubah data default_key lagu di database', function () {
+    Queue::fake();
+
     expect($this->publicSong->default_key)->toEqual('C');
 
     $response = $this->get(route('songs.timeline', ['song' => $this->publicSong, 'transpose' => 2]));
@@ -364,6 +367,9 @@ test('transpose sesi di timeline player tidak mengubah data default_key lagu di 
     // Verifikasi database tidak tersentuh
     $this->publicSong->refresh();
     expect($this->publicSong->default_key)->toEqual('C');
+
+    // Pastikan tidak ada file MP3 chord hasil transpose yang tersisa di disk uji
+    Storage::disk('public')->deleteDirectory('chords/audio');
 });
 
 test('seluruh teks antarmuka player menggunakan Bahasa Indonesia murni tanpa fungsi translasi', function () {

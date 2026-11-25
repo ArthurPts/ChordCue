@@ -343,16 +343,13 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
      - `update`: perbarui `position` saja. Gunakan `DB::transaction` dan `lockForUpdate()`. Validasi keunikan `position` pada `lyric_line_id` yang sama. Jika tabrakan tanpa `force`, kirim `409 Conflict`. Jika `force: true`, hapus placement lama.
      - `release`: endpoint `POST /placements/{placement}/release` yang mengosongkan `position = null` tanpa mengubah `start_beat`.
      - `destroy`: hapus record placement seutuhnya.
-  4. Rancang bilah Backing Track di `resources/views/songs/editor-simple.blade.php`:
-     - Kontainer `bg-surface-1 border border-subtle rounded-lg p-16 mb-16`.
-     - Input numerik offset taktil: `h-[40px] px-14 rounded-sm bg-surface-2 border border-subtle text-ink font-mono text-sm w-[120px] focus:border-accent`.
-     - Kelompok tombol fine-tune nudge tactile:
-       - Tombol `-100ms`: `bg-surface-2 hover:bg-surface-3 border border-subtle text-ink font-mono text-xs rounded-sm px-10 h-[32px]`.
-       - Tombol `-10ms`: `bg-surface-2 hover:bg-surface-3 border border-subtle text-ink font-mono text-xs rounded-sm px-10 h-[32px]`.
-       - Tombol `+10ms`: `bg-surface-2 hover:bg-surface-3 border border-subtle text-ink font-mono text-xs rounded-sm px-10 h-[32px]`.
-       - Tombol `+100ms`: `bg-surface-2 hover:bg-surface-3 border border-subtle text-ink font-mono text-xs rounded-sm px-10 h-[32px]`.
-       - Tombol `Reset`: `bg-surface-2 hover:bg-surface-3 border border-subtle text-ink-secondary hover:text-ink font-mono text-xs rounded-sm px-12 h-[32px]`.
-     - Komponen Alpine.js menangani interaksi klik nudge, memperbarui nilai input, dan memanggil `fetch('/songs/' + songId + '/backing-track/offset', { method: 'PATCH', ... })` dengan debounce halus / on change.
+  4. Rancang panel atas terpadu di `resources/views/songs/partials/editor-top-panel.blade.php` (dipakai bersama oleh `editor-simple.blade.php` dan `editor-beat.blade.php`):
+     - Kontainer ringkas: `bg-surface-1 border border-subtle rounded-lg p-12 space-y-10`.
+     - Input metadata lagu & tombol `Simpan` gabungan: `h-[32px] rounded-sm` (`text-caption`, `font-mono` untuk nada dasar, BPM, dan time signature).
+     - Baris Backing Track MP3 (pemutar pratinjau audio tema gelap kustom + picker MP3 + `Hapus Audio`) dan baris `Kategori`: kontrol ringkas `h-[28px]`.
+     - Input numerik offset taktil: `h-[28px] w-[84px] px-8 rounded-sm bg-surface-2 border border-subtle text-ink font-mono text-caption text-center focus:border-accent`.
+     - Kelompok tombol fine-tune nudge sebaris (`-1s`, `-100ms`, `-10ms`, `+10ms`, `+100ms`, `+1s`, `Reset`): `bg-surface-2 hover:bg-surface-3 border border-subtle text-ink font-mono text-caption rounded-sm px-8 h-[28px]`.
+     - Komponen Alpine.js (`resources/js/editor-shared.js`) menangani interaksi klik nudge (clamp minimum `0.000`), memperbarui nilai input, dan memanggil `fetch('/songs/' + songId + '/backing-track/offset', { method: 'PATCH', ... })` dengan debounce halus / on change.
   5. Rancang area lirik utama dengan slot huruf drag-and-drop dan drawer unplaced chords per baris.
   6. Tulis pengujian Pest di `tests/Feature/SimpleEditorTest.php` mencakup verifikasi render tombol nudge offset dan AJAX update.
 - **File Dibuat / Dimodifikasi**:
@@ -453,10 +450,6 @@ Jika fondasi ini digabungkan langsung ke Batch 1, cakupan Batch 1 akan menjadi t
 
 ---
 
-## 7. Alur Persetujuan & Batasan Eksekusi
-- **STATUS SAAT INI**: Revisi perencanaan selesai. TIDAK ADA KODE APLIKASI YANG DITULIS ATAU DIMODIFIKASI.
-- **LANGKAH SELANJUTNYA**: Berhenti di sini dan menunggu persetujuan eksplisit dari Pengguna (USER).
-- **ALUR PENGERJAAN SETELAH DISETUJUI**:
-  1. Kerjakan **SATU BATCH SAJA** pada satu waktu (diawali dengan Batch 0 setelah disetujui).
-  2. Jalankan acceptance checklist dan pengujian Pest untuk batch tersebut.
-  3. Ringkas perubahan, sebutkan file yang disentuh, laporkan deviasi jika ada, lalu **STOP** dan minta persetujuan eksplisit sebelum melangkah ke batch berikutnya.
+## 7. Status Implementasi Akhir
+- **STATUS SAAT INI**: Seluruh batch pada rencana ini (**Batch 0, Batch 1, Batch 2, dan Batch 3**) telah **SELESAI DIIMPLEMENTASIKAN DAN DISETUJUI (IMPLEMENTED & APPROVED)**.
+- Seluruh pengujian otomatis (Pest PHP & Node JS unit tests) lulus dan aset produksi Vite telah dibangun.

@@ -32,7 +32,19 @@ class SongController extends Controller
         Gate::authorize('view', $song);
 
         // 2. Query Database
-        $song->loadMissing(['artist', 'categories', 'sections.lines.placements.chord']);
+        $song->loadMissing([
+            'artist',
+            'categories',
+            'sections' => function ($sectionQuery) {
+                $sectionQuery->orderBy('sequence');
+                $sectionQuery->with([
+                    'lines' => function ($lineQuery) {
+                        $lineQuery->orderBy('line_number');
+                        $lineQuery->with('placements.chord');
+                    },
+                ]);
+            },
+        ]);
 
         // 3. Response / Render View
         return view('songs.player', [

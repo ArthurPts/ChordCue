@@ -49,7 +49,6 @@ export function createSharedEditorState(initialConfig) {
         metaError: '',
 
         // Backing track state
-        backingTrackPath: initialConfig.song.backing_track_path || null,
         backingTrackUrl: initialConfig.song.backing_track_url || null,
         selectedAudioName: '',
         isUploadingAudio: false,
@@ -258,7 +257,6 @@ export function createSharedEditorState(initialConfig) {
                     if (Array.isArray(data.song.category_ids)) {
                         this.metaForm.category_ids = data.song.category_ids.map((id) => Number(id));
                     }
-                    this.backingTrackPath = data.song.backing_track_path || null;
                     this.backingTrackUrl = data.song.backing_track_url || null;
                     if (fileInput && fileInput.files && fileInput.files.length > 0) {
                         this.resetPreviewAudio();
@@ -366,7 +364,6 @@ export function createSharedEditorState(initialConfig) {
                 }
 
                 this.resetPreviewAudio();
-                this.backingTrackPath = null;
                 this.backingTrackUrl = null;
                 this.offsetInput = '0.000';
                 this.savedInitialOffset = 0;
