@@ -450,3 +450,34 @@ test('sinkronisasi offset, deteksi akhir ucapan TTS, dan konfigurasi threshold/t
     expect($engineJs)->toContain('getEffectiveCueDuration(');
     expect($engineJs)->toContain('this.activeBackingSource.start(backingStartAudioTime, backingBufferOffset);');
 });
+
+test('player menampilkan tanda "-" sebagai fallback saat artist atau default_key NULL/kosong tanpa mengubah database', function () {
+    $songWithoutArtistAndKey = Song::create([
+        'user_id'                    => $this->owner->id,
+        'title'                      => 'Lagu Polos Tanpa Metadata',
+        'artist_id'                  => null,
+        'default_key'                => null,
+        'bpm'                        => 100,
+        'time_signature_numerator'   => 4,
+        'time_signature_denominator' => 4,
+        'visibility'                 => 'public',
+    ]);
+
+    $response = $this->get(route('songs.show', $songWithoutArtistAndKey));
+    $response->assertStatus(200);
+    $response->assertSee('Lagu Polos Tanpa Metadata');
+    $response->assertDontSee('Artis Tidak Diketahui');
+    $response->assertSee("initialKey: '-'", false);
+    $response->assertSee('<p class="text-body text-ink-secondary font-medium mt-4">' . "\n" . '                    -' . "\n" . '                </p>', false);
+
+    // Timeline API mengembalikan null untuk artist & key kosong (fallback '-' hanya di layer tampilan Player)
+    $timeline = $this->getJson(route('songs.timeline', $songWithoutArtistAndKey));
+    $timeline->assertOk()
+        ->assertJsonPath('song.artist', null)
+        ->assertJsonPath('song.key', null);
+
+    // Pastikan DB tetap NULL dan tidak pernah diisi '-'
+    $fresh = $songWithoutArtistAndKey->fresh();
+    expect($fresh->artist_id)->toBeNull();
+    expect($fresh->default_key)->toBeNull();
+});

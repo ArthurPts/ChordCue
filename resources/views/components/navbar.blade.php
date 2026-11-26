@@ -72,10 +72,34 @@
                             @php
                                 $isSongsActive = request()->routeIs('admin.songs.index');
                             @endphp
-                            <a href="{{ route('admin.songs.index') }}" class="relative flex items-center gap-8 px-14 h-full text-sm font-medium transition-colors {{ $isSongsActive ? 'text-accent' : 'text-ink-secondary hover:text-ink' }}">
+                            <a href="{{ route('admin.songs.index') }}" class="relative flex items-center gap-8 px-10 lg:px-14 h-full text-sm font-medium whitespace-nowrap transition-colors {{ $isSongsActive ? 'text-accent' : 'text-ink-secondary hover:text-ink' }}">
                                 <x-icon name="music-single" class="w-[18px] h-[18px] {{ $isSongsActive ? 'text-accent' : 'text-ink-secondary' }}" />
                                 <span>Kelola Lagu</span>
                                 @if ($isSongsActive)
+                                    <div class="absolute bottom-0 left-0 right-0 h-[2.5px] bg-accent"></div>
+                                @endif
+                            </a>
+
+                            <!-- Kelola Kategori -->
+                            @php
+                                $isCategoriesActive = request()->routeIs('admin.categories.*');
+                            @endphp
+                            <a href="{{ route('admin.categories.index') }}" class="relative flex items-center gap-8 px-10 lg:px-14 h-full text-sm font-medium whitespace-nowrap transition-colors {{ $isCategoriesActive ? 'text-accent' : 'text-ink-secondary hover:text-ink' }}">
+                                <x-icon name="tag" class="w-[18px] h-[18px] {{ $isCategoriesActive ? 'text-accent' : 'text-ink-secondary' }}" />
+                                <span>Kelola Kategori</span>
+                                @if ($isCategoriesActive)
+                                    <div class="absolute bottom-0 left-0 right-0 h-[2.5px] bg-accent"></div>
+                                @endif
+                            </a>
+
+                            <!-- Kelola Artis -->
+                            @php
+                                $isArtistsActive = request()->routeIs('admin.artists.*');
+                            @endphp
+                            <a href="{{ route('admin.artists.index') }}" class="relative flex items-center gap-8 px-10 lg:px-14 h-full text-sm font-medium whitespace-nowrap transition-colors {{ $isArtistsActive ? 'text-accent' : 'text-ink-secondary hover:text-ink' }}">
+                                <x-icon name="disc" class="w-[18px] h-[18px] {{ $isArtistsActive ? 'text-accent' : 'text-ink-secondary' }}" />
+                                <span>Kelola Artis</span>
+                                @if ($isArtistsActive)
                                     <div class="absolute bottom-0 left-0 right-0 h-[2.5px] bg-accent"></div>
                                 @endif
                             </a>
@@ -185,6 +209,18 @@
                             <div class="flex items-center gap-8">
                                 <x-icon name="music-single" class="w-4 h-4" />
                                 <span>Kelola Lagu</span>
+                            </div>
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                            <div class="flex items-center gap-8">
+                                <x-icon name="tag" class="w-4 h-4" />
+                                <span>Kelola Kategori</span>
+                            </div>
+                        </x-responsive-nav-link>
+                        <x-responsive-nav-link :href="route('admin.artists.index')" :active="request()->routeIs('admin.artists.*')">
+                            <div class="flex items-center gap-8">
+                                <x-icon name="disc" class="w-4 h-4" />
+                                <span>Kelola Artis</span>
                             </div>
                         </x-responsive-nav-link>
                     </div>

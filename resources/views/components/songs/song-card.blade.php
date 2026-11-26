@@ -3,6 +3,7 @@
     'title' => null,
     'artist' => null,
     'bpm' => null,
+    'defaultKey' => null,
     'timeSignature' => null,
     'categories' => null,
     'url' => '#',
@@ -16,6 +17,10 @@
         $title = $title ?? $song->title;
         $artist = $artist ?? ($song->artist ? $song->artist->name : 'Artis Tidak Diketahui');
         $bpm = $bpm ?? $song->bpm;
+        $rawDefaultKey = $defaultKey ?? $song->default_key;
+        $defaultKey = ($rawDefaultKey !== null && trim((string) $rawDefaultKey) !== '')
+            ? trim((string) $rawDefaultKey)
+            : '-';
         $timeSignature = $timeSignature ?? ($song->time_signature_numerator . '/' . $song->time_signature_denominator);
         $categories = $categories ?? $song->categories;
         $url = $url !== '#' ? $url : ($song ? route('songs.show', $song) : route('chords.index'));
@@ -25,6 +30,10 @@
         $title = $title ?? 'Judul Lagu Contoh';
         $artist = $artist ?? 'Artis Contoh';
         $bpm = $bpm ?? 120;
+        $rawDefaultKey = $defaultKey;
+        $defaultKey = ($rawDefaultKey !== null && trim((string) $rawDefaultKey) !== '')
+            ? trim((string) $rawDefaultKey)
+            : '-';
         $timeSignature = $timeSignature ?? '4/4';
         $categories = $categories ?? [];
     }
@@ -42,13 +51,17 @@
             </p>
         </div>
 
-        <!-- Metric Row: BPM & Time Signature -->
-        <div class="mt-16 pt-12 border-t border-subtle/50 flex items-center justify-between text-xs text-ink-secondary">
-            <div class="flex items-center gap-6">
+        <!-- Metric Row: BPM, Default Key & Time Signature -->
+        <div class="mt-16 pt-12 border-t border-subtle/50 flex items-center justify-between gap-8 text-xs text-ink-secondary">
+            <div class="flex items-center gap-6 shrink-0">
                 <x-icon name="metronome" class="w-4 h-4 text-ink-secondary shrink-0" />
                 <span class="font-mono font-medium text-ink">{{ $bpm }} <span class="text-[11px] text-ink-tertiary">BPM</span></span>
             </div>
-            <div class="font-mono">
+            <div class="font-mono min-w-0 truncate" title="Nada Dasar: {{ $defaultKey }}">
+                <span class="text-ink-tertiary">Nada:</span>
+                <span class="font-medium {{ $defaultKey !== '-' ? 'text-accent' : 'text-ink' }} ml-2">{{ $defaultKey }}</span>
+            </div>
+            <div class="font-mono shrink-0">
                 <span class="text-ink-tertiary">Birama:</span>
                 <span class="font-medium text-ink ml-2">{{ $timeSignature }}</span>
             </div>

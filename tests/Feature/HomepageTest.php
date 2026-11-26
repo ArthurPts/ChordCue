@@ -39,3 +39,26 @@ test('homepage filter by artist works', function () {
     $response->assertSee('Sheila on 7');
     $response->assertSee('Dan');
 });
+
+test('homepage song card displays default key between bpm and time signature and uses "-" fallback when null or empty', function () {
+    // Lagu $this->song pada beforeEach memiliki default_key = null -> harus menampilkan "-"
+    $responseNull = $this->get('/');
+    $responseNull->assertStatus(200);
+    $responseNull->assertSeeInOrder(['110', 'BPM', 'Nada:', '-', 'Birama:', '4/4']);
+
+    // Tambah lagu dengan default_key terisi -> harus menampilkan nilai aslinya di antara BPM dan Birama
+    Song::create([
+        'user_id' => $this->user->id,
+        'title' => 'Lagu Bernada Dasar',
+        'artist_id' => $this->artist->id,
+        'default_key' => 'F#m',
+        'bpm' => 92,
+        'time_signature_numerator' => 3,
+        'time_signature_denominator' => 4,
+        'visibility' => 'public',
+    ]);
+
+    $responseWithKey = $this->get('/?q=Bernada');
+    $responseWithKey->assertStatus(200);
+    $responseWithKey->assertSeeInOrder(['92', 'BPM', 'Nada:', 'F#m', 'Birama:', '3/4']);
+});

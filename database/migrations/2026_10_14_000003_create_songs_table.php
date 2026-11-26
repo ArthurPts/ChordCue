@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('title', 120);
-            $table->foreignId('artist_id')->constrained('artists')->cascadeOnDelete();
+            $table->foreignId('artist_id')->nullable()->constrained('artists')->nullOnDelete();
             $table->string('default_key', 45)->nullable();
             $table->smallInteger('bpm')->unsigned()->default(80);
             $table->tinyInteger('time_signature_numerator')->unsigned()->default(4);

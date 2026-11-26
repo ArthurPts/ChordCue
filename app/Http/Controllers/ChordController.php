@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Chord;
 use App\Models\ChordDiagram;
+use DomainException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -111,7 +112,9 @@ class ChordController extends Controller
 
         if ($request->hasFile('diagram')) {
             $path = $request->file('diagram')->store('chords/diagrams', 'public');
-            $chord->diagrams()->delete();
+            foreach ($chord->diagrams as $oldDiagram) {
+                $oldDiagram->deleteWithFiles();
+            }
             ChordDiagram::create([
                 'chord_id' => $chord->id,
                 'file_path' => $path,
@@ -123,7 +126,10 @@ class ChordController extends Controller
     }
 
     /**
-     * Hapus chord dari database (Admin Only).
+     * Hapus chord beserta file audio TTS dan file diagramnya di storage (Admin Only).
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: DELETE /chords/{chord} (chords.destroy)
      */
     public function destroy(Chord $chord)
     {
@@ -131,8 +137,11 @@ class ChordController extends Controller
             abort(403, 'Akses khusus administrator.');
         }
 
-        $chord->diagrams()->delete();
-        $chord->delete();
+        try {
+            $chord->deleteWithFiles();
+        } catch (DomainException $exception) {
+            return redirect()->route('chords.index')->with('error', $exception->getMessage());
+        }
 
         return redirect()->route('chords.index')->with('success', 'Chord berhasil dihapus.');
     }

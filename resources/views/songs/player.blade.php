@@ -11,6 +11,12 @@
         $cueMarginMs = (int) config('chordcue.cue_margin_ms', 1000);
         $speechSilenceThresholdDb = (float) config('chordcue.speech_silence_threshold_db', -40.0);
         $chordCueTrimMs = (int) config('chordcue.chord_cue_trim_ms', 0);
+        $displayArtist = ($song->artist && trim((string) $song->artist->name) !== '')
+            ? $song->artist->name
+            : '-';
+        $displayDefaultKey = ($song->default_key !== null && trim((string) $song->default_key) !== '')
+            ? $song->default_key
+            : '-';
     @endphp
 
     <div
@@ -20,7 +26,7 @@
             cueMarginMs: {{ $cueMarginMs }},
             speechSilenceThresholdDb: {{ $speechSilenceThresholdDb }},
             chordCueTrimMs: {{ $chordCueTrimMs }},
-            initialKey: @js($song->default_key ?? '-'),
+            initialKey: @js($displayDefaultKey),
             hasInitialBackingTrack: {{ $song->backing_track_path ? 'true' : 'false' }},
             initialBackingOffset: {{ $initialOffsetFloat }},
             initialTimeSigNum: {{ $song->time_signature_numerator ?? 4 }},
@@ -344,7 +350,7 @@
                     </span>
                 </div>
                 <p class="text-body text-ink-secondary font-medium mt-4">
-                    {{ $song->artist ? $song->artist->name : 'Artis Tidak Diketahui' }}
+                    {{ $displayArtist }}
                 </p>
             </div>
 
@@ -353,7 +359,7 @@
                 <!-- Nada Dasar -->
                 <div class="bg-surface-2 border border-subtle rounded-sm px-12 py-6 text-caption flex items-center gap-6">
                     <span class="text-ink-tertiary font-medium">Nada:</span>
-                    <span class="font-mono font-medium text-accent text-body" x-text="displayKey">{{ $song->default_key ?? '-' }}</span>
+                    <span class="font-mono font-medium text-accent text-body" x-text="displayKey">{{ $displayDefaultKey }}</span>
                 </div>
 
                 <!-- BPM Lagu Asli -->

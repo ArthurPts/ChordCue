@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ArtistController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChordController;
 use App\Http\Controllers\ChordPlacementController;
 use App\Http\Controllers\LyricLineController;
@@ -187,6 +189,18 @@ Route::middleware('auth')->group(function () {
 
             return view('admin.songs.index', compact('songs', 'totalSongs', 'publicSongsCount', 'privateSongsCount', 'visibility'));
         })->name('songs.index');
+
+        // Kelola Kategori (Admin Only) - Genre, Mood, Lokasi dalam satu halaman
+        Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+        Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        // Kelola Artis (Admin Only)
+        Route::get('/artists', [ArtistController::class, 'index'])->name('artists.index');
+        Route::post('/artists', [ArtistController::class, 'store'])->name('artists.store');
+        Route::put('/artists/{artist}', [ArtistController::class, 'update'])->name('artists.update');
+        Route::delete('/artists/{artist}', [ArtistController::class, 'destroy'])->name('artists.destroy');
     });
 });
 

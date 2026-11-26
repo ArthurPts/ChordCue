@@ -2,23 +2,23 @@
     <div class="max-w-content mx-auto w-full px-16 md:px-24 py-24 sm:py-32 pb-[88px]">
         <!-- Header -->
         <div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">
+            <h1 class="text-display font-medium text-ink leading-heading">
                 Kelola Pengguna
             </h1>
-            <p class="text-xs sm:text-sm text-ink-secondary mt-1">
+            <p class="text-body text-ink-secondary mt-4">
                 Kelola akun pengguna dan hak akses di aplikasi ChordCue.
             </p>
         </div>
 
         <!-- Session Status & Error Flash Alerts -->
         @if (session('status'))
-            <div class="mt-16 p-14 rounded-md bg-accent/15 border border-accent/30 text-accent text-xs sm:text-sm flex items-center gap-10">
+            <div role="status" class="mt-16 p-14 rounded-md bg-success-tint border border-success/30 text-success text-body flex items-center gap-10">
                 <x-icon name="check" class="w-icon-control h-icon-control shrink-0" />
                 <span>{{ session('status') }}</span>
             </div>
         @endif
         @if (session('error'))
-            <div class="mt-16 p-14 rounded-md bg-error-tint/80 border border-error/40 text-error text-xs sm:text-sm flex items-center gap-10">
+            <div role="alert" class="mt-16 p-14 rounded-md bg-error-tint border border-error/30 text-error text-body flex items-center gap-10">
                 <x-icon name="alert-circle" class="w-icon-control h-icon-control shrink-0" />
                 <span>{{ session('error') }}</span>
             </div>
@@ -32,10 +32,10 @@
                     <x-icon name="user" class="w-icon-control h-icon-control" />
                 </div>
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-ink-secondary">Total User</span>
-                    <div class="mt-2 flex items-baseline gap-10">
-                        <span class="text-2xl font-bold font-mono text-ink">{{ $totalUsers }}</span>
-                        <span class="text-[11px] text-ink-tertiary">Terdaftar di sistem</span>
+                    <span class="text-caption font-medium text-ink-secondary">Total User</span>
+                    <div class="mt-4 flex items-baseline gap-10">
+                        <span class="text-display font-medium font-mono text-ink leading-heading">{{ $totalUsers }}</span>
+                        <span class="text-caption text-ink-tertiary">Terdaftar di sistem</span>
                     </div>
                 </div>
             </div>
@@ -46,10 +46,10 @@
                     <x-icon name="lock" class="w-icon-control h-icon-control" />
                 </div>
                 <div>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-ink-secondary">Admin</span>
-                    <div class="mt-2 flex items-baseline gap-10">
-                        <span class="text-2xl font-bold font-mono text-ink">{{ $adminUsers }}</span>
-                        <span class="text-[11px] text-ink-tertiary">Hak akses administrator</span>
+                    <span class="text-caption font-medium text-ink-secondary">Admin</span>
+                    <div class="mt-4 flex items-baseline gap-10">
+                        <span class="text-display font-medium font-mono text-ink leading-heading">{{ $adminUsers }}</span>
+                        <span class="text-caption text-ink-tertiary">Hak akses administrator</span>
                     </div>
                 </div>
             </div>
@@ -69,11 +69,11 @@
                     name="q"
                     value="{{ request('q') }}"
                     placeholder="Cari username atau email..."
-                    class="w-full h-[40px] pl-[38px] pr-[36px] bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors"
+                    class="w-full h-[40px] pl-[38px] pr-[36px] bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-body transition-colors"
                 >
                 @if (request('q'))
                     <a href="{{ route('admin.users.index', request()->except('q', 'page')) }}" class="absolute inset-y-0 right-0 pr-14 flex items-center text-ink-secondary hover:text-ink transition-colors cursor-pointer" aria-label="Hapus pencarian">
-                        <x-icon name="x" class="w-[14px] h-[14px]" />
+                        <x-icon name="x" class="w-icon-chip h-icon-chip" />
                     </a>
                 @endif
             </div>
@@ -83,7 +83,7 @@
                 <select
                     name="role"
                     onchange="this.form.submit()"
-                    class="w-full h-[40px] bg-surface-2 border border-subtle rounded-sm px-14 pr-[36px] text-ink text-xs sm:text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent cursor-pointer transition-colors"
+                    class="w-full h-[40px] bg-surface-2 border border-subtle rounded-sm px-14 pr-[36px] text-ink text-body appearance-none focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent cursor-pointer transition-colors"
                 >
                     <option value="">Semua Role</option>
                     <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
@@ -100,7 +100,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-subtle bg-surface-2/60 text-ink-secondary text-[11px] font-semibold uppercase tracking-wider">
+                        <tr class="border-b border-subtle bg-surface-2/60 text-ink-secondary text-caption font-medium">
                             <th scope="col" class="py-12 px-16 sm:px-20">Username</th>
                             <th scope="col" class="py-12 px-16 sm:px-20">Email</th>
                             <th scope="col" class="py-12 px-16 sm:px-20">Role</th>
@@ -114,33 +114,33 @@
                                 <!-- Username with Avatar -->
                                 <td class="py-14 px-16 sm:px-20 whitespace-nowrap">
                                     <div class="flex items-center gap-10">
-                                        <div class="w-[32px] h-[32px] rounded-full bg-surface-3 border border-subtle flex items-center justify-center text-accent shrink-0 text-xs font-bold uppercase">
+                                        <div class="w-[32px] h-[32px] rounded-full bg-surface-3 border border-subtle flex items-center justify-center text-accent shrink-0 text-caption font-medium uppercase">
                                             {{ strtoupper(substr($u->username, 0, 1)) }}
                                         </div>
-                                        <span class="text-xs sm:text-sm font-semibold text-ink">{{ $u->username }}</span>
+                                        <span class="text-body font-medium text-ink">{{ $u->username }}</span>
                                     </div>
                                 </td>
 
                                 <!-- Email -->
-                                <td class="py-14 px-16 sm:px-20 whitespace-nowrap text-xs sm:text-sm text-ink-secondary">
+                                <td class="py-14 px-16 sm:px-20 whitespace-nowrap text-body text-ink-secondary">
                                     {{ $u->email }}
                                 </td>
 
                                 <!-- Role Badge -->
                                 <td class="py-14 px-16 sm:px-20 whitespace-nowrap">
                                     @if ($u->role === 'admin')
-                                        <span class="inline-flex items-center px-10 py-2 rounded-full text-[11px] font-semibold border border-accent/40 bg-accent-soft-bg text-accent-soft-text">
+                                        <span class="inline-flex items-center px-10 py-4 rounded-full text-caption font-medium border border-accent/40 bg-accent-soft-bg text-accent-soft-text">
                                             Admin
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-10 py-2 rounded-full text-[11px] font-medium border border-subtle bg-surface-2 text-ink-secondary">
+                                        <span class="inline-flex items-center px-10 py-4 rounded-full text-caption font-medium border border-subtle bg-surface-2 text-ink-secondary">
                                             Member
                                         </span>
                                     @endif
                                 </td>
 
                                 <!-- Jumlah Lagu -->
-                                <td class="py-14 px-16 sm:px-20 whitespace-nowrap text-xs sm:text-sm font-mono text-ink-secondary">
+                                <td class="py-14 px-16 sm:px-20 whitespace-nowrap text-body font-mono text-ink-secondary">
                                     {{ $u->songs_count }} songs
                                 </td>
 
@@ -150,18 +150,18 @@
                                         <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini beserta seluruh lagu miliknya?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="h-[32px] px-14 rounded-sm bg-error-tint/70 hover:bg-error-tint border border-error/30 text-error font-semibold text-xs inline-flex items-center justify-center transition-colors cursor-pointer">
+                                            <button type="submit" class="h-[32px] px-14 rounded-sm bg-error-tint/70 hover:bg-error-tint border border-error/30 text-error font-medium text-caption inline-flex items-center justify-center transition-colors cursor-pointer">
                                                 <span>Hapus</span>
                                             </button>
                                         </form>
                                     @else
-                                        <span class="text-xs text-ink-tertiary italic">Akun Anda</span>
+                                        <span class="text-caption text-ink-tertiary italic">Akun Anda</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-40 text-center text-xs sm:text-sm text-ink-secondary">
+                                <td colspan="5" class="py-32 text-center text-body text-ink-secondary">
                                     Tidak ada user yang ditemukan.
                                 </td>
                             </tr>

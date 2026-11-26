@@ -66,7 +66,9 @@ class SongTimelineController extends Controller
         }]);
 
         // Pergeseran nada dasar lagu jika formatnya dapat diurai (§5.7)
-        $transposedKey = $song->default_key;
+        $transposedKey = ($song->default_key !== null && trim((string) $song->default_key) !== '')
+            ? $song->default_key
+            : null;
         if ($transposedKey && $transposeSteps !== 0) {
             $transposedKey = $this->transposer->transpose($transposedKey, $transposeSteps);
         }
@@ -167,7 +169,7 @@ class SongTimelineController extends Controller
             'song' => [
                 'id'                   => $song->id,
                 'title'                => $song->title,
-                'artist'               => $song->artist ? $song->artist->name : 'Unknown Artist',
+                'artist'               => ($song->artist && trim((string) $song->artist->name) !== '') ? $song->artist->name : null,
                 'key'                  => $transposedKey,
                 'bpm'                  => $song->bpm,
                 'time_signature'       => [

@@ -208,15 +208,17 @@ test('user can create a new song through modal submission', function () {
     ]);
 });
 
-test('song creation fails if required fields are missing', function () {
+test('song creation fails if required fields are missing while artist and default key remain optional', function () {
     $user = User::factory()->create(['role' => 'user']);
 
     $response = $this->actingAs($user)->post('/songs', [
         'title' => '',
         'artist' => '',
+        'default_key' => '',
     ]);
 
-    $response->assertSessionHasErrors(['title', 'artist', 'bpm', 'time_signature', 'visibility']);
+    $response->assertSessionHasErrors(['title', 'bpm', 'time_signature', 'visibility']);
+    $response->assertSessionDoesntHaveErrors(['artist', 'default_key']);
 });
 
 test('song creation validates bpm boundary values (40 - 240)', function () {
@@ -353,5 +355,127 @@ test('admin can create songs without quota limit', function () {
     $this->assertDatabaseHas('songs', [
         'title' => 'Lagu Kedua Admin Tetap Bisa',
     ]);
+});
+
+test('create song modal renders default key textbox beside optional artist on the same two-column row', function () {
+    $user = User::factory()->create(['role' => 'user']);
+
+    $response = $this->actingAs($user)->get('/my/songs');
+
+    $response->assertStatus(200);
+    $response->assertSee('id="modal_song_artist"', false);
+    $response->assertSee('id="modal_song_default_key"', false);
+    $response->assertSee('name="default_key"', false);
+    $response->assertSee('Nada Dasar');
+
+    $modalContent = file_get_contents(resource_path('views/components/songs/create-song-modal.blade.php'));
+    $artistPos = strpos($modalContent, 'id="modal_song_artist"');
+    $keyPos = strpos($modalContent, 'id="modal_song_default_key"');
+    $bpmPos = strpos($modalContent, 'id="modal_song_bpm"');
+    expect($artistPos)->not->toBeFalse();
+    expect($keyPos)->not->toBeFalse();
+    expect($bpmPos)->not->toBeFalse();
+    expect($artistPos)->toBeLessThan($keyPos);
+    expect($keyPos)->toBeLessThan($bpmPos);
+
+    // Default Key adalah textbox (<input type="text">), bukan dropdown (<select>), dan Artist/Default Key tidak required
+    expect($modalContent)->toContain('id="modal_song_default_key"');
+    expect($modalContent)->not->toContain('<select' . "\n" . '                                id="modal_song_default_key"');
+    expect($modalContent)->toMatch('/<input[^>]*id="modal_song_default_key"[^>]*type="text"/s');
+    expect($modalContent)->not->toMatch('/<input[^>]*id="modal_song_artist"[^>]*\brequired\b/s');
+    expect($modalContent)->not->toMatch('/<input[^>]*id="modal_song_default_key"[^>]*\brequired\b/s');
+});
+
+test('user can create a new song with free-text default key and it initializes player, editor, and transpose', function () {
+    $user = User::factory()->create(['role' => 'user']);
+
+    $response = $this->actingAs($user)->post('/songs', [
+        'title' => 'Lagu Nada Dasar F#',
+        'artist' => 'Artis Nada',
+        'default_key' => 'F#',
+        'bpm' => 112,
+        'time_signature' => '4/4',
+        'visibility' => 'public',
+    ]);
+
+    $response->assertRedirect('/my/songs');
+    $response->assertSessionHasNoErrors();
+
+    $song = Song::where('title', 'Lagu Nada Dasar F#')->first();
+    expect($song)->not->toBeNull();
+    expect($song->default_key)->toBe('F#');
+
+    // Player initializes with selected default_key
+    $playerResponse = $this->actingAs($user)->get(route('songs.show', $song));
+    $playerResponse->assertStatus(200);
+    $playerResponse->assertSee('F#');
+    $playerResponse->assertSee('Artis Nada');
+
+    // Editor initializes with selected default_key
+    $editorResponse = $this->actingAs($user)->get(route('songs.editor.simple', $song));
+    $editorResponse->assertStatus(200);
+    $editorResponse->assertSee('F#');
+
+    // Timeline & transposition use default_key cleanly
+    $timelineBase = $this->actingAs($user)->getJson(route('songs.timeline', $song));
+    $timelineBase->assertOk()
+        ->assertJsonPath('song.key', 'F#')
+        ->assertJsonPath('song.artist', 'Artis Nada');
+
+    $timelineTransposed = $this->actingAs($user)->getJson(route('songs.timeline', ['song' => $song, 'transpose' => 2]));
+    $timelineTransposed->assertOk()->assertJsonPath('song.key', 'G#');
+});
+
+test('user can create songs without artist, without default key, or without both and empty/whitespace values persist as NULL', function () {
+    $user = User::factory()->create(['role' => 'user']);
+
+    // 1. Tanpa Artist (dengan Default Key)
+    $noArtist = $this->actingAs($user)->post('/songs', [
+        'title' => 'Lagu Tanpa Artist',
+        'artist' => '   ',
+        'default_key' => 'Bb',
+        'bpm' => 100,
+        'time_signature' => '4/4',
+        'visibility' => 'public',
+    ]);
+    $noArtist->assertSessionHasNoErrors();
+    $songNoArtist = Song::where('title', 'Lagu Tanpa Artist')->first();
+    expect($songNoArtist)->not->toBeNull();
+    expect($songNoArtist->artist_id)->toBeNull();
+    expect($songNoArtist->default_key)->toBe('Bb');
+
+    // 2. Tanpa Default Key (dengan Artist)
+    $noKey = $this->actingAs($user)->post('/songs', [
+        'title' => 'Lagu Tanpa Key',
+        'artist' => 'Solois Bebas',
+        'default_key' => '   ',
+        'bpm' => 96,
+        'time_signature' => '3/4',
+        'visibility' => 'public',
+    ]);
+    $noKey->assertSessionHasNoErrors();
+    $songNoKey = Song::where('title', 'Lagu Tanpa Key')->first();
+    expect($songNoKey)->not->toBeNull();
+    expect($songNoKey->artist->name)->toBe('Solois Bebas');
+    expect($songNoKey->default_key)->toBeNull();
+
+    // 3. Tanpa Artist maupun Default Key
+    $neither = $this->actingAs($user)->post('/songs', [
+        'title' => 'Lagu Tanpa Artist Dan Key',
+        'artist' => '',
+        'default_key' => '',
+        'bpm' => 110,
+        'time_signature' => '6/8',
+        'visibility' => 'public',
+    ]);
+    $neither->assertSessionHasNoErrors();
+    $songNeither = Song::where('title', 'Lagu Tanpa Artist Dan Key')->first();
+    expect($songNeither)->not->toBeNull();
+    expect($songNeither->artist_id)->toBeNull();
+    expect($songNeither->default_key)->toBeNull();
+
+    // Pastikan tidak ada tanda "-" yang tersimpan di DB
+    expect(Artist::where('name', '-')->exists())->toBeFalse();
+    expect(Artist::where('name', '')->exists())->toBeFalse();
 });
 

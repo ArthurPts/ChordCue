@@ -24,7 +24,7 @@ export function chordsheetPlayer(config = {}) {
         // Parameter Sesi Latihan
         sessionBpm: Number(config.songBpm || 80),
         currentTranspose: 0,
-        displayKey: config.initialKey || '-',
+        displayKey: (config.initialKey && String(config.initialKey).trim() !== '') ? config.initialKey : '-',
         hasBackingTrack: Boolean(config.hasInitialBackingTrack || false),
         backingTrackOffset: Number(config.initialBackingOffset ?? 0.0),
 
@@ -313,7 +313,7 @@ export function chordsheetPlayer(config = {}) {
 
                 const data = await response.json();
                 this.timelineData = data;
-                this.displayKey = data.song?.key || '-';
+                this.displayKey = (data.song?.key && String(data.song.key).trim() !== '') ? data.song.key : '-';
                 this.audioReady = Boolean(data.audio_ready);
                 this.pendingChords = Number(data.pending_chords || 0);
                 this.timeSignatureNumerator = Number(data.song?.time_signature?.numerator || 4);

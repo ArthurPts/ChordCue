@@ -1,6 +1,11 @@
 <?php
 
 use App\Models\Chord;
+use App\Models\ChordDiagram;
+use App\Models\ChordPlacement;
+use App\Models\LyricLine;
+use App\Models\Song;
+use App\Models\SongSection;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -156,6 +161,132 @@ test('admin can delete a chord', function () {
     $this->assertDatabaseMissing('chords', [
         'id' => $chord->id,
     ]);
+});
+
+test('deleting a chord removes its diagram image and tts audio files from storage', function () {
+    Storage::fake('public');
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $diagramPath = 'chords/diagrams/custom-delete-test.png';
+    $audioPath = 'chords/audio/customdeletetest.mp3';
+    Storage::disk('public')->put($diagramPath, 'fake-image');
+    Storage::disk('public')->put($audioPath, 'fake-audio');
+
+    $chord = Chord::create([
+        'name' => 'CustomDeleteTest',
+        'pronunciation' => 'Custom Delete Test',
+        'file_path' => $audioPath,
+    ]);
+    ChordDiagram::create([
+        'chord_id' => $chord->id,
+        'file_path' => $diagramPath,
+    ]);
+
+    $response = $this->actingAs($admin)->delete("/chords/{$chord->id}");
+
+    $response->assertRedirect(route('chords.index'));
+    $this->assertDatabaseMissing('chords', ['id' => $chord->id]);
+    $this->assertDatabaseMissing('chord_diagrams', ['chord_id' => $chord->id]);
+    Storage::disk('public')->assertMissing($diagramPath);
+    Storage::disk('public')->assertMissing($audioPath);
+});
+
+test('deleting a chord using default placeholder preserves No_Image_Available.jpg in storage', function () {
+    Storage::fake('public');
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $placeholderPath = ChordDiagram::DEFAULT_PLACEHOLDER_PATH;
+    Storage::disk('public')->put($placeholderPath, 'placeholder-image');
+
+    $chord = Chord::create([
+        'name' => 'PlaceholderDeleteTest',
+        'pronunciation' => 'Placeholder Delete Test',
+    ]);
+    ChordDiagram::create([
+        'chord_id' => $chord->id,
+        'file_path' => $placeholderPath,
+    ]);
+
+    $response = $this->actingAs($admin)->delete("/chords/{$chord->id}");
+
+    $response->assertRedirect(route('chords.index'));
+    $this->assertDatabaseMissing('chords', ['id' => $chord->id]);
+    Storage::disk('public')->assertExists($placeholderPath);
+});
+
+test('updating a chord diagram removes the old diagram file from storage', function () {
+    Storage::fake('public');
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $oldPath = 'chords/diagrams/old-diagram.png';
+    Storage::disk('public')->put($oldPath, 'old-image');
+
+    $chord = Chord::create([
+        'name' => 'ReplaceDiagramChord',
+        'pronunciation' => 'Replace Diagram Chord',
+    ]);
+    ChordDiagram::create([
+        'chord_id' => $chord->id,
+        'file_path' => $oldPath,
+    ]);
+
+    $newFile = UploadedFile::fake()->image('new-diagram.png');
+    $response = $this->actingAs($admin)->put("/chords/{$chord->id}", [
+        'name' => 'ReplaceDiagramChord',
+        'pronunciation' => 'Replace Diagram Chord',
+        'diagram' => $newFile,
+    ]);
+
+    $response->assertRedirect();
+    Storage::disk('public')->assertMissing($oldPath);
+    $newDiagram = $chord->fresh()->diagrams()->first();
+    expect($newDiagram)->not->toBeNull();
+    Storage::disk('public')->assertExists($newDiagram->file_path);
+});
+
+test('deleting a chord still used in chord_placements is rejected and preserves its files', function () {
+    Storage::fake('public');
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $diagramPath = 'chords/diagrams/in-use-chord.png';
+    $audioPath = 'chords/audio/inusechord.mp3';
+    Storage::disk('public')->put($diagramPath, 'fake-image');
+    Storage::disk('public')->put($audioPath, 'fake-audio');
+
+    $chord = Chord::create([
+        'name' => 'InUseChord',
+        'pronunciation' => 'In Use Chord',
+        'file_path' => $audioPath,
+    ]);
+    ChordDiagram::create([
+        'chord_id' => $chord->id,
+        'file_path' => $diagramPath,
+    ]);
+
+    $song = Song::create([
+        'user_id' => $admin->id,
+        'title' => 'Lagu Pemakai Chord',
+        'bpm' => 100,
+        'time_signature_numerator' => 4,
+        'time_signature_denominator' => 4,
+        'visibility' => 'public',
+    ]);
+    $section = SongSection::create(['song_id' => $song->id, 'name' => 'Verse', 'sequence' => 1]);
+    $line = LyricLine::create(['song_section_id' => $section->id, 'line_number' => 1, 'content' => 'Baris uji']);
+    ChordPlacement::create([
+        'lyric_line_id' => $line->id,
+        'chord_id' => $chord->id,
+        'position' => 0,
+        'start_beat' => 1,
+    ]);
+
+    $response = $this->actingAs($admin)->delete("/chords/{$chord->id}");
+
+    $response->assertRedirect(route('chords.index'));
+    $response->assertSessionHas('error');
+    $this->assertDatabaseHas('chords', ['id' => $chord->id]);
+    Storage::disk('public')->assertExists($diagramPath);
+    Storage::disk('public')->assertExists($audioPath);
 });
 
 test('regular user cannot delete a chord', function () {

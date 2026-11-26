@@ -219,7 +219,7 @@ export function createSharedEditorState(initialConfig) {
                 const formData = new FormData();
                 formData.append('_method', 'PATCH');
                 formData.append('title', this.metaForm.title);
-                formData.append('artist', this.metaForm.artist);
+                formData.append('artist', this.metaForm.artist || '');
                 formData.append('default_key', this.metaForm.default_key || '');
                 formData.append('bpm', String(Number(this.metaForm.bpm)));
                 formData.append('time_signature', this.metaForm.time_signature);
@@ -249,7 +249,7 @@ export function createSharedEditorState(initialConfig) {
 
                 if (data.song) {
                     this.metaForm.title = data.song.title;
-                    this.metaForm.artist = data.song.artist;
+                    this.metaForm.artist = data.song.artist || '';
                     this.metaForm.default_key = data.song.default_key || '';
                     this.metaForm.bpm = Number(data.song.bpm);
                     this.metaForm.time_signature = data.song.time_signature;

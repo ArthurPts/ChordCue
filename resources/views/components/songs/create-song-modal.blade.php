@@ -65,29 +65,54 @@
                     >
                 </div>
 
-                <!-- Artist -->
-                <div class="space-y-4">
-                    <label for="modal_song_artist" class="block text-xs font-semibold text-ink-secondary">
-                        Artist
-                    </label>
-                    <div class="relative">
-                        <input
-                            id="modal_song_artist"
-                            type="text"
-                            name="artist"
-                            list="modal-artists-list"
-                            required
-                            placeholder="Pilih Artist"
-                            class="w-full h-[40px] px-14 pr-[36px] bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors"
-                        >
-                        <datalist id="modal-artists-list">
-                            @foreach ($artists as $artist)
-                                <option value="{{ $artist->name }}"></option>
-                            @endforeach
-                        </datalist>
-                        <div class="absolute inset-y-0 right-0 pr-12 flex items-center pointer-events-none text-ink-secondary">
-                            <x-icon name="chevron-down" class="w-4 h-4" />
+                <!-- Row: Artist & Default Key -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-14">
+                    <!-- Artist -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <label for="modal_song_artist" class="block text-xs font-semibold text-ink-secondary">
+                                Artist
+                            </label>
+                            <span class="text-[11px] text-ink-tertiary font-mono">Opsional</span>
                         </div>
+                        <div class="relative">
+                            <input
+                                id="modal_song_artist"
+                                type="text"
+                                name="artist"
+                                list="modal-artists-list"
+                                value="{{ old('artist') }}"
+                                placeholder="Pilih atau ketik Artist"
+                                class="w-full h-[40px] px-14 pr-[36px] bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors"
+                            >
+                            <datalist id="modal-artists-list">
+                                @foreach ($artists as $artist)
+                                    <option value="{{ $artist->name }}"></option>
+                                @endforeach
+                            </datalist>
+                            <div class="absolute inset-y-0 right-0 pr-12 flex items-center pointer-events-none text-ink-secondary">
+                                <x-icon name="chevron-down" class="w-4 h-4" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Default Key (Nada Dasar) -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <label for="modal_song_default_key" class="block text-xs font-semibold text-ink-secondary">
+                                Nada Dasar
+                            </label>
+                            <span class="text-[11px] text-ink-tertiary font-mono">Opsional</span>
+                        </div>
+                        <input
+                            id="modal_song_default_key"
+                            type="text"
+                            name="default_key"
+                            maxlength="45"
+                            value="{{ old('default_key') }}"
+                            placeholder="Contoh: C, D, F#, Bb"
+                            class="w-full h-[40px] px-14 bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors font-mono"
+                        >
                     </div>
                 </div>
 

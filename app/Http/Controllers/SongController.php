@@ -61,18 +61,24 @@ class SongController extends Controller
 
     /**
      * Simpan lagu baru ke database.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: POST /songs (songs.store)
+     * - resources/views/components/songs/create-song-modal.blade.php
      */
     public function store(Request $request)
     {
+        // 1. Otorisasi & Validasi Input
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'artist' => 'required|string|max:255',
+            'artist' => ['nullable', 'string', 'max:255'],
+            'default_key' => ['nullable', 'string', 'max:45'],
             'bpm' => 'required|integer|min:40|max:240',
             'time_signature' => 'required|string|in:4/4,3/4,2/4,6/8',
             'visibility' => 'required|in:public,private',
         ], [
             'title.required' => 'Judul lagu wajib diisi.',
-            'artist.required' => 'Nama artist wajib diisi.',
+            'default_key.max' => 'Nada dasar maksimal 45 karakter.',
             'bpm.required' => 'BPM wajib diisi.',
             'bpm.integer' => 'BPM harus berupa angka.',
             'bpm.min' => 'BPM minimal 40.',
@@ -89,24 +95,32 @@ class SongController extends Controller
             }
         }
 
-        // Cari atau buat artis baru
-        $artist = Artist::firstOrCreate([
-            'name' => trim($validated['artist']),
-        ]);
+        // 2. Query Database
+        $trimmedArtist = isset($validated['artist']) ? trim($validated['artist']) : '';
+        $artistId = null;
+        if ($trimmedArtist !== '') {
+            $artist = Artist::firstOrCreate([
+                'name' => $trimmedArtist,
+            ]);
+            $artistId = $artist->id;
+        }
 
         // Pecah time signature (misal 4/4) menjadi numerator dan denominator
         [$numerator, $denominator] = explode('/', $validated['time_signature']);
+        $trimmedKey = isset($validated['default_key']) ? trim($validated['default_key']) : '';
 
         $song = Song::create([
             'user_id' => auth()->id(),
             'title' => $validated['title'],
-            'artist_id' => $artist->id,
+            'artist_id' => $artistId,
+            'default_key' => $trimmedKey !== '' ? $trimmedKey : null,
             'bpm' => (int) $validated['bpm'],
             'time_signature_numerator' => (int) $numerator,
             'time_signature_denominator' => (int) $denominator,
             'visibility' => $validated['visibility'],
         ]);
 
+        // 3. Response / Render View
         return redirect()->route('my.songs')->with('status', 'Lagu "' . $song->title . '" berhasil dibuat.');
     }
 
@@ -310,7 +324,7 @@ class SongController extends Controller
 
         $validated = $request->validate([
             'title'           => ['required', 'string', 'max:120'],
-            'artist'          => ['required', 'string', 'max:255'],
+            'artist'          => ['nullable', 'string', 'max:255'],
             'default_key'     => ['nullable', 'string', 'max:45'],
             'bpm'             => ['required', 'integer', 'min:40', 'max:240'],
             'time_signature'  => ['required', 'string', 'in:4/4,3/4,2/4,6/8'],
@@ -322,7 +336,6 @@ class SongController extends Controller
         ], [
             'title.required'          => 'Judul lagu wajib diisi.',
             'title.max'               => 'Judul lagu maksimal 120 karakter.',
-            'artist.required'         => 'Nama artist wajib diisi.',
             'default_key.max'         => 'Nada dasar maksimal 45 karakter.',
             'bpm.required'            => 'BPM wajib diisi.',
             'bpm.integer'             => 'BPM harus berupa angka.',
@@ -340,16 +353,20 @@ class SongController extends Controller
         ]);
 
         // 2. Query Database
-        $artist = Artist::firstOrCreate([
-            'name' => trim($validated['artist']),
-        ]);
+        $trimmedArtist = isset($validated['artist']) ? trim($validated['artist']) : '';
+        $artist = null;
+        if ($trimmedArtist !== '') {
+            $artist = Artist::firstOrCreate([
+                'name' => $trimmedArtist,
+            ]);
+        }
 
         [$numerator, $denominator] = explode('/', $validated['time_signature']);
         $trimmedKey = isset($validated['default_key']) ? trim($validated['default_key']) : '';
 
         $updateData = [
             'title'                      => trim($validated['title']),
-            'artist_id'                  => $artist->id,
+            'artist_id'                  => $artist ? $artist->id : null,
             'default_key'                => $trimmedKey !== '' ? $trimmedKey : null,
             'bpm'                        => (int) $validated['bpm'],
             'time_signature_numerator'   => (int) $numerator,
@@ -398,7 +415,7 @@ class SongController extends Controller
                 'song'    => [
                     'id'                   => $song->id,
                     'title'                => $song->title,
-                    'artist'               => $artist->name,
+                    'artist'               => $artist ? $artist->name : '',
                     'default_key'          => $song->default_key ?? '',
                     'bpm'                  => (int) $song->bpm,
                     'time_signature'       => $song->time_signature_numerator . '/' . $song->time_signature_denominator,

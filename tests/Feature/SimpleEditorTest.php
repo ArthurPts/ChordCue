@@ -544,3 +544,43 @@ test('pemilik lagu dapat melihat, menetapkan, mengubah, dan mengosongkan kategor
     expect($clearRes->json('song.category_ids'))->toBe([]);
     expect($this->song->fresh()->categories()->count())->toBe(0);
 });
+
+test('simple editor dan beat editor mengizinkan artist dan default_key dikosongkan, menyimpannya sebagai NULL, dan memuat ulang sebagai input kosong', function () {
+    // Kosongkan artist & default_key via PATCH /songs/{song} (digunakan oleh Simple Editor & Beat Editor)
+    $response = $this->actingAs($this->owner)
+        ->patchJson(route('songs.update', $this->song), [
+            'title'          => $this->song->title,
+            'artist'         => '   ',
+            'default_key'    => '',
+            'bpm'            => $this->song->bpm,
+            'time_signature' => '4/4',
+            'visibility'     => 'public',
+        ]);
+
+    $response->assertOk()->assertJson([
+        'success' => true,
+        'song'    => [
+            'artist'      => '',
+            'default_key' => '',
+        ],
+    ]);
+
+    $fresh = $this->song->fresh();
+    expect($fresh->artist_id)->toBeNull();
+    expect($fresh->default_key)->toBeNull();
+
+    // Muat ulang Simple Editor & Beat Editor: editorData harus membawa '' (bukan '-')
+    $simpleView = $this->actingAs($this->owner)->get(route('songs.editor.simple', $fresh));
+    $simpleView->assertOk();
+    expect($simpleView->viewData('editorData')['song']['artist'])->toBe('');
+    expect($simpleView->viewData('editorData')['song']['default_key'])->toBe('');
+
+    $beatView = $this->actingAs($this->owner)->get(route('songs.editor.beat', $fresh));
+    $beatView->assertOk();
+    expect($beatView->viewData('editorData')['song']['artist'])->toBe('');
+    expect($beatView->viewData('editorData')['song']['default_key'])->toBe('');
+
+    // Pastikan input artist di editor-top-panel tidak memiliki atribut required
+    $topPanel = file_get_contents(resource_path('views/songs/partials/editor-top-panel.blade.php'));
+    expect($topPanel)->not->toMatch('/<input[^>]*id="editor_song_artist"[^>]*\brequired\b/s');
+});

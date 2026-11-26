@@ -198,7 +198,7 @@ COLLATE = utf8mb4_unicode_ci;
 -- Table `chordcue`.`chord_diagrams`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `chordcue`.`chord_diagrams` (
-  `id` BIGINT(20) NOT NULL,
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `chord_id` BIGINT(20) UNSIGNED NOT NULL,
   `file_path` VARCHAR(255) NULL,
   PRIMARY KEY (`id`),

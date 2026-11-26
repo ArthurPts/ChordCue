@@ -97,7 +97,6 @@
                     type="text"
                     x-model="metaForm.artist"
                     list="editor-artists-list"
-                    required
                     class="w-full h-[32px] px-10 rounded-sm bg-surface-2 border border-subtle text-ink placeholder:text-ink-tertiary focus:border-accent focus:outline-none text-caption"
                     placeholder="Nama artist"
                 >
