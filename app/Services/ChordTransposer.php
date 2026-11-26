@@ -10,7 +10,6 @@ namespace App\Services;
  *
  * Fungsi ini digunakan pada:
  * - SongTimelineController::show (GET /songs/{song}/timeline?transpose=N)
- * - ChordController::index (Filter chord dasar di Pustaka Chord)
  */
 class ChordTransposer
 {
@@ -121,6 +120,9 @@ class ChordTransposer
      * - extractRoot('F#m7') => 'F#'
      * - extractRoot('G/B')  => 'G'
      * - extractRoot('Bb')   => 'Bb'
+     *
+     * Fungsi ini digunakan pada:
+     * - Pengujian unit MusicServicesTest (disiapkan untuk fitur filter nada dasar)
      *
      * @param string $chordName
      * @return string|null Nada akar (A-G dengan aksidental opsional) atau null jika tidak dapat diurai

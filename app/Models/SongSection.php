@@ -37,14 +37,6 @@ class SongSection extends Model
     /**
      * Baris-baris lirik dalam section ini.
      */
-    public function lyricLines(): HasMany
-    {
-        return $this->hasMany(LyricLine::class, 'song_section_id');
-    }
-
-    /**
-     * Alias relasi baris lirik sesuai skema spesifikasi sistem §9.3.
-     */
     public function lines(): HasMany
     {
         return $this->hasMany(LyricLine::class, 'song_section_id');

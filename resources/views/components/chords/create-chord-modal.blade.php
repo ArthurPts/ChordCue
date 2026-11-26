@@ -78,15 +78,21 @@
 
                 <!-- Cara Baca Input -->
                 <div class="space-y-4">
-                    <label for="create_chord_pronunciation" class="block text-xs font-semibold text-ink-secondary">
-                        Cara Baca (contoh : C Sharp Minor)
-                    </label>
+                    <div class="flex items-center justify-between gap-8">
+                        <label for="create_chord_pronunciation" class="block text-xs font-semibold text-ink-secondary">
+                            Cara Baca (contoh : C Sharp Minor)
+                        </label>
+                        <span class="text-[11px] text-ink-tertiary font-mono">Tanpa simbol</span>
+                    </div>
                     <input
                         id="create_chord_pronunciation"
                         type="text"
                         name="pronunciation"
                         required
-                        placeholder="cara baca"
+                        pattern="[A-Za-z0-9 ]+"
+                        title="Hanya huruf, angka, dan spasi (tanpa simbol)"
+                        @input="$event.target.value = $event.target.value.replace(/[^a-zA-Z0-9 ]/g, '')"
+                        placeholder="cara baca (hanya huruf, angka, spasi)"
                         class="w-full h-[40px] px-14 bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent text-xs sm:text-sm transition-colors"
                     >
                 </div>

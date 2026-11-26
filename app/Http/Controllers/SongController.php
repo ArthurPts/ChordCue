@@ -51,13 +51,6 @@ class SongController extends Controller
             'song' => $song,
         ]);
     }
-    /**
-     * Tampilkan form pembuatan lagu baru.
-     */
-    public function create()
-    {
-        return redirect()->route('my.songs');
-    }
 
     /**
      * Simpan lagu baru ke database.
@@ -293,20 +286,6 @@ class SongController extends Controller
     }
 
     /**
-     * Menampilkan halaman Simple Editor untuk mengedit lagu.
-     *
-     * Fungsi ini digunakan pada:
-     * - Route: GET /songs/{song}/edit (songs.edit)
-     */
-    public function edit(Song $song): View
-    {
-        // 1. Otorisasi & Validasi Input
-        // 2. Query Database
-        // 3. Response / Render View
-        return $this->editorSimple($song);
-    }
-
-    /**
      * Memperbarui metadata lagu (judul, artis, nada dasar, BPM, time signature, visibilitas)
      * serta opsional berkas backing track MP3 dalam satu aksi simpan.
      *
@@ -433,16 +412,21 @@ class SongController extends Controller
 
     /**
      * Hapus lagu beserta file backing track fisiknya.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: DELETE /songs/{song} (songs.destroy)
+     * - resources/views/components/songs/song-card.blade.php
+     * - resources/views/admin/songs/index.blade.php
      */
-    public function destroy(Song $song)
+    public function destroy(Song $song): RedirectResponse
     {
-        // Hanya pemilik lagu atau administrator yang berhak menghapus
-        if (auth()->user()->role !== 'admin' && $song->user_id !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki hak akses untuk menghapus lagu ini.');
-        }
+        // 1. Otorisasi & Validasi Input
+        Gate::authorize('delete', $song);
 
+        // 2. Query Database
         $song->deleteWithFiles();
 
+        // 3. Response / Render View
         return back()->with('status', 'Lagu berhasil dihapus.');
     }
 }

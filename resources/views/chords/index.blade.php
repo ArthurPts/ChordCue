@@ -6,7 +6,6 @@
             'name' => $selectedChord->name,
             'pronunciation' => $selectedChord->pronunciation,
             'diagram_url' => $selectedChord->diagram_url,
-            'fret_data' => $selectedChord->fret_data,
         ] : null;
     @endphp
 

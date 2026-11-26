@@ -119,6 +119,31 @@ test('admin can create a new chord without diagram and uses default placeholder'
     });
 });
 
+test('creating a chord rejects symbols in pronunciation and only allows plain text', function () {
+    Queue::fake();
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $response = $this->actingAs($admin)->post('/chords', [
+        'name' => 'G#m9',
+        'pronunciation' => 'G# minor 9!',
+    ]);
+
+    $response->assertSessionHasErrors(['pronunciation']);
+    $this->assertDatabaseMissing('chords', ['name' => 'G#m9']);
+
+    // Plain text huruf, angka, dan spasi diterima
+    $validResponse = $this->actingAs($admin)->post('/chords', [
+        'name' => 'G#m9',
+        'pronunciation' => 'G sharp minor 9',
+    ]);
+
+    $validResponse->assertSessionHasNoErrors();
+    $this->assertDatabaseHas('chords', [
+        'name' => 'G#m9',
+        'pronunciation' => 'G sharp minor 9',
+    ]);
+});
+
 test('regular user cannot create a chord', function () {
     $user = User::factory()->create(['role' => 'user']);
 
@@ -359,4 +384,60 @@ test('regular user cannot delete a chord', function () {
     $this->assertDatabaseHas('chords', [
         'id' => $chord->id,
     ]);
+});
+
+test('chord diagram upload enforces chord_diagram_max_mb config on create and update', function () {
+    Storage::fake('public');
+    Queue::fake();
+    config()->set('chordcue.chord_diagram_max_mb', 1);
+
+    $admin = User::factory()->create(['role' => 'admin']);
+    $oversizedFile = UploadedFile::fake()->image('oversized.png')->size(1500);
+
+    $createResponse = $this->actingAs($admin)->post('/chords', [
+        'name' => 'OversizedCreate',
+        'pronunciation' => 'Oversized Create',
+        'diagram' => $oversizedFile,
+    ]);
+
+    $createResponse->assertSessionHasErrors(['diagram']);
+    $this->assertDatabaseMissing('chords', ['name' => 'OversizedCreate']);
+
+    $chord = Chord::create([
+        'name' => 'ValidChordForDiagramLimit',
+        'pronunciation' => 'Valid Chord',
+    ]);
+
+    $updateResponse = $this->actingAs($admin)->put("/chords/{$chord->id}", [
+        'name' => 'ValidChordForDiagramLimit',
+        'pronunciation' => 'Valid Chord',
+        'diagram' => $oversizedFile,
+    ]);
+
+    $updateResponse->assertSessionHasErrors(['diagram']);
+});
+
+test('updating a chord rejects symbols in pronunciation and only allows plain text', function () {
+    Queue::fake();
+    $admin = User::factory()->create(['role' => 'admin']);
+    $chord = Chord::create([
+        'name' => 'UpdatePlainCheck',
+        'pronunciation' => 'Update Plain Check',
+    ]);
+
+    $invalidResponse = $this->actingAs($admin)->put("/chords/{$chord->id}", [
+        'name' => 'UpdatePlainCheck',
+        'pronunciation' => 'C# minor!',
+    ]);
+
+    $invalidResponse->assertSessionHasErrors(['pronunciation']);
+    expect($chord->fresh()->pronunciation)->toBe('Update Plain Check');
+
+    $validResponse = $this->actingAs($admin)->put("/chords/{$chord->id}", [
+        'name' => 'UpdatePlainCheck',
+        'pronunciation' => 'C sharp minor',
+    ]);
+
+    $validResponse->assertSessionHasNoErrors();
+    expect($chord->fresh()->pronunciation)->toBe('C sharp minor');
 });

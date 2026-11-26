@@ -50,21 +50,15 @@ class ChordController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Otorisasi & Validasi Input
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus administrator.');
-        }
+        // 1. Otorisasi & Validasi Input (Otorisasi ditangani oleh middleware 'admin')
+        $maxDiagramMb = (int) config('chordcue.chord_diagram_max_mb', 2);
+        $maxDiagramKb = $maxDiagramMb * 1024;
 
         $validated = $request->validate([
             'name' => 'required|string|max:120|unique:chords,name',
-            'pronunciation' => 'required|string|max:120',
-            'diagram' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
-        ], [
-            'name.required' => 'Nama chord wajib diisi.',
-            'name.unique' => 'Chord dengan nama ini sudah ada.',
-            'pronunciation.required' => 'Cara baca chord wajib diisi.',
-            'diagram.image' => 'File diagram harus berupa gambar.',
-        ]);
+            'pronunciation' => ['required', 'string', 'max:120', 'regex:/^[A-Za-z0-9 ]+$/'],
+            'diagram' => ['nullable', 'image', 'mimes:jpeg,png,jpg,svg', 'max:' . $maxDiagramKb],
+        ], $this->chordValidationMessages($maxDiagramMb));
 
         // 2. Query Database & Simpan File
         $chord = Chord::create([
@@ -103,21 +97,15 @@ class ChordController extends Controller
      */
     public function update(Request $request, Chord $chord)
     {
-        // 1. Otorisasi & Validasi Input
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus administrator.');
-        }
+        // 1. Otorisasi & Validasi Input (Otorisasi ditangani oleh middleware 'admin')
+        $maxDiagramMb = (int) config('chordcue.chord_diagram_max_mb', 2);
+        $maxDiagramKb = $maxDiagramMb * 1024;
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:120', Rule::unique('chords', 'name')->ignore($chord->id)],
-            'pronunciation' => 'required|string|max:120',
-            'diagram' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
-        ], [
-            'name.required' => 'Nama chord wajib diisi.',
-            'name.unique' => 'Chord dengan nama ini sudah ada.',
-            'pronunciation.required' => 'Cara baca chord wajib diisi.',
-            'diagram.image' => 'File diagram harus berupa gambar.',
-        ]);
+            'pronunciation' => ['required', 'string', 'max:120', 'regex:/^[A-Za-z0-9 ]+$/'],
+            'diagram' => ['nullable', 'image', 'mimes:jpeg,png,jpg,svg', 'max:' . $maxDiagramKb],
+        ], $this->chordValidationMessages($maxDiagramMb));
 
         // 2. Query Database & Perbarui File Audio/Diagram
         $newName = trim($validated['name']);
@@ -171,10 +159,6 @@ class ChordController extends Controller
      */
     public function destroy(Chord $chord)
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus administrator.');
-        }
-
         try {
             $chord->deleteWithFiles();
         } catch (DomainException $exception) {
@@ -182,5 +166,27 @@ class ChordController extends Controller
         }
 
         return redirect()->route('chords.index')->with('success', 'Chord berhasil dihapus.');
+    }
+
+    /**
+     * Menyusun pesan validasi terstandar untuk form tambah dan ubah chord.
+     *
+     * Fungsi ini digunakan pada:
+     * - ChordController::store()
+     * - ChordController::update()
+     *
+     * @return array<string, string>
+     */
+    private function chordValidationMessages(int $maxDiagramMb): array
+    {
+        return [
+            'name.required' => 'Nama chord wajib diisi.',
+            'name.unique' => 'Chord dengan nama ini sudah ada.',
+            'pronunciation.required' => 'Cara baca chord wajib diisi.',
+            'pronunciation.regex' => 'Cara baca hanya boleh berisi huruf, angka, dan spasi (tanpa simbol).',
+            'diagram.image' => 'File diagram harus berupa gambar.',
+            'diagram.mimes' => 'Format gambar diagram harus JPEG, PNG, JPG, atau SVG.',
+            'diagram.max' => 'Ukuran gambar diagram maksimal ' . $maxDiagramMb . ' MB.',
+        ];
     }
 }

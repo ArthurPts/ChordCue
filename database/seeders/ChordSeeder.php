@@ -25,23 +25,26 @@ class ChordSeeder extends Seeder
     public function run(): void
     {
         $chordNames = [
-            'C', 'D', 'E', 'F', 'G', 'A', 'B',
-            'Cm', 'Dm', 'Em', 'Fm', 'Gm', 'Am', 'Bm',
-            'F#m',
-            'C7', 'D7', 'E7', 'G7', 'A7', 'B7',
-            'Cmaj7', 'Fmaj7', 'Gmaj7',
-            'Am7', 'Dm7', 'Em7', 'Bm7',
-            'Dsus4', 'Asus4',
-            'Bb', 'Eb', 'Ab',
-            'C#m', 'G#m',
+            'A',
+            'Am',
+            'Bb',
             'Bdim',
-            'Cadd9', 'Gadd9', 'Dadd9',
-            'F#7',
-            'Gsus4', 'Csus4',
-
-            // Slash Chords (12 varian)
-            'C/G', 'C/E', 'D/F#', 'G/B', 'G/F', 'Am/G',
-            'Am/E', 'F/A', 'Dm/F', 'Em/B', 'A/C#', 'Bb/D',
+            'Bm7b5',
+            'Cadd9',
+            'Caug',
+            'Cdim7',
+            'Csus2',
+            'Csus4',
+            'C7',
+            'Cmaj7',
+            'Cm7',
+            'Cmaj9',
+            'C7#5',
+            'C7b9',
+            'D7sus4',
+            'E/G#',
+            'Fmaj7',
+            'G13',
         ];
 
         $pronunciationGenerator = new PronunciationGenerator();

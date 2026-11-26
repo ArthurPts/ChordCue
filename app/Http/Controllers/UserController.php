@@ -9,13 +9,12 @@ class UserController extends Controller
 {
     /**
      * Tampilkan daftar manajemen pengguna untuk administrator.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: GET /admin/users (admin.users.index)
      */
     public function index(Request $request)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus administrator.');
-        }
-
         $totalUsers = User::count();
         $adminUsers = User::where('role', 'admin')->count();
 
@@ -46,13 +45,12 @@ class UserController extends Controller
 
     /**
      * Hapus pengguna beserta seluruh lagunya.
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: DELETE /admin/users/{user} (admin.users.destroy)
      */
     public function destroy(User $user)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus administrator.');
-        }
-
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }

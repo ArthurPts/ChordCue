@@ -43,22 +43,6 @@ class CategoryController extends Controller
     ];
 
     /**
-     * Memastikan pengguna yang mengakses adalah administrator.
-     *
-     * Fungsi ini digunakan pada:
-     * - CategoryController::index()
-     * - CategoryController::store()
-     * - CategoryController::update()
-     * - CategoryController::destroy()
-     */
-    private function ensureAdmin(): void
-    {
-        if (! auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus administrator.');
-        }
-    }
-
-    /**
      * Menampilkan halaman Kelola Kategori (Genre, Mood, Lokasi) dalam satu halaman terpadu.
      *
      * Fungsi ini digunakan pada:
@@ -68,8 +52,6 @@ class CategoryController extends Controller
     public function index(Request $request): View
     {
         // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
         $requestedType = (string) $request->input('type', 'genre');
         $activeType = array_key_exists($requestedType, self::TYPES) ? $requestedType : 'genre';
         $searchKeyword = trim((string) $request->input('q', ''));
@@ -113,8 +95,6 @@ class CategoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
         $request->merge([
             'name' => trim((string) $request->input('name', '')),
         ]);
@@ -154,8 +134,6 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category): RedirectResponse
     {
         // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
         $request->merge([
             'name' => trim((string) $request->input('name', '')),
         ]);
@@ -194,10 +172,7 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): RedirectResponse
     {
-        // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
-        // 2. Query Database
+        // 1. Otorisasi & Validasi Input & 2. Query Database
         $categoryName = $category->name;
         $categoryType = $category->type;
         $typeLabel = self::TYPES[$categoryType]['label'] ?? 'Kategori';

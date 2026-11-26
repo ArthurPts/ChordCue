@@ -11,22 +11,6 @@ use Illuminate\View\View;
 class ArtistController extends Controller
 {
     /**
-     * Memastikan pengguna yang mengakses adalah administrator.
-     *
-     * Fungsi ini digunakan pada:
-     * - ArtistController::index()
-     * - ArtistController::store()
-     * - ArtistController::update()
-     * - ArtistController::destroy()
-     */
-    private function ensureAdmin(): void
-    {
-        if (! auth()->check() || auth()->user()->role !== 'admin') {
-            abort(403, 'Akses khusus administrator.');
-        }
-    }
-
-    /**
      * Menampilkan daftar manajemen artis beserta statistik dan pencarian.
      *
      * Fungsi ini digunakan pada:
@@ -36,8 +20,6 @@ class ArtistController extends Controller
     public function index(Request $request): View
     {
         // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
         $searchKeyword = trim((string) $request->input('q', ''));
 
         // 2. Query Database
@@ -74,8 +56,6 @@ class ArtistController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
         $request->merge([
             'name' => trim((string) $request->input('name', '')),
         ]);
@@ -109,8 +89,6 @@ class ArtistController extends Controller
     public function update(Request $request, Artist $artist): RedirectResponse
     {
         // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
         $request->merge([
             'name' => trim((string) $request->input('name', '')),
         ]);
@@ -143,10 +121,7 @@ class ArtistController extends Controller
      */
     public function destroy(Artist $artist): RedirectResponse
     {
-        // 1. Otorisasi & Validasi Input
-        $this->ensureAdmin();
-
-        // 2. Query Database
+        // 1. Otorisasi & Validasi Input & 2. Query Database
         $songsCount = $artist->songs()->count();
         if ($songsCount > 0) {
             return redirect()

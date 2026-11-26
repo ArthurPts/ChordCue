@@ -117,16 +117,17 @@ Route::middleware('auth')->group(function () {
     })->name('my.songs');
 
     // Chord Actions (Admin Only)
-    Route::post('/chords', [ChordController::class, 'store'])->name('chords.store');
-    Route::put('/chords/{chord}', [ChordController::class, 'update'])->name('chords.update');
-    Route::delete('/chords/{chord}', [ChordController::class, 'destroy'])->name('chords.destroy');
+    Route::middleware('admin')->group(function () {
+        Route::post('/chords', [ChordController::class, 'store'])->name('chords.store');
+        Route::put('/chords/{chord}', [ChordController::class, 'update'])->name('chords.update');
+        Route::delete('/chords/{chord}', [ChordController::class, 'destroy'])->name('chords.destroy');
+    });
 
     // Song Actions
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
-    Route::get('/songs/create', [SongController::class, 'create'])->name('songs.create');
     Route::get('/songs/{song}/editor/simple', [SongController::class, 'editorSimple'])->name('songs.editor.simple');
     Route::get('/songs/{song}/editor/beat', [SongController::class, 'editorBeat'])->name('songs.editor.beat');
-    Route::get('/songs/{song}/edit', [SongController::class, 'edit'])->name('songs.edit');
+    Route::get('/songs/{song}/edit', [SongController::class, 'editorSimple'])->name('songs.edit');
     Route::patch('/songs/{song}', [SongController::class, 'update'])->name('songs.update');
     Route::delete('/songs/{song}', [SongController::class, 'destroy'])->name('songs.destroy');
 
@@ -145,17 +146,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/placements/{placement}', [ChordPlacementController::class, 'destroy'])->name('placements.destroy');
 
     // Admin Routes
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         // Kelola User (Admin Only)
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
         // Kelola Lagu (Admin Only) - Tabel manajemen seluruh lagu publik dan privat
         Route::get('/songs', function (Request $request) {
-            if (auth()->user()->role !== 'admin') {
-                abort(403, 'Akses khusus administrator.');
-            }
-
             $totalSongs = Song::count();
             $publicSongsCount = Song::where('visibility', 'public')->count();
             $privateSongsCount = Song::where('visibility', 'private')->count();

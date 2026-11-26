@@ -23,7 +23,11 @@ test('dummy chord placement seeder mengisi kedua lagu target sesuai aturan siste
     $artistSempurna = Artist::create(['name' => 'Andra and the Backbone']);
     $artistWaltz = Artist::create(['name' => 'Duo Dummy']);
 
-    $chordNames = ['C', 'G', 'Am', 'Em', 'Dm', 'F', 'G7', 'Em7', 'Am7', 'Dm7', 'Cmaj7', 'C7', 'Fmaj7', 'Cadd9'];
+    $chordNames = [
+        'A', 'Am', 'Bb', 'Bdim', 'Bm7b5', 'Cadd9', 'Caug', 'Cdim7',
+        'Csus2', 'Csus4', 'C7', 'Cmaj7', 'Cm7', 'Cmaj9', 'C7#5', 'C7b9',
+        'D7sus4', 'E/G#', 'Fmaj7', 'G13',
+    ];
     foreach ($chordNames as $chordName) {
         Chord::create([
             'name'          => $chordName,
