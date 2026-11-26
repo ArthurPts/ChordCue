@@ -68,7 +68,7 @@
                                 type="text"
                                 name="q"
                                 value="{{ request('q') }}"
-                                placeholder="Cari Chord..."
+                                placeholder="Cari nama chord..."
                                 class="w-full h-[40px] pl-[38px] pr-[34px] bg-surface-2 border border-subtle rounded-sm text-ink placeholder:text-ink-secondary text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-colors"
                             >
                             @if (request('q'))
@@ -176,7 +176,7 @@
                         </div>
 
                         {{-- Big Diagram Container (Dark Studio Surface) --}}
-                        <div class="bg-surface-2 border border-subtle/80 rounded-md p-16 sm:p-20 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[300px] overflow-hidden">
+                        <div class="bg-white border border-subtle/80 rounded-md p-16 sm:p-20 flex flex-col items-center justify-center min-h-[260px] sm:min-h-[300px] overflow-hidden">
                             <template x-if="selectedChord">
                                 <div class="w-full flex flex-col items-center justify-center">
                                     <img

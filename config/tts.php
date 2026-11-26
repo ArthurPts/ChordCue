@@ -30,12 +30,12 @@ return [
     |--------------------------------------------------------------------------
     | Voice default yang dipakai untuk pelafalan audio chord oleh edge-tts.
     | Contoh opsi suara:
-    |   - en-US-AriaNeural (Wanita, Bahasa Inggris - direkomendasikan untuk nama chord)
-    |   - en-US-GuyNeural  (Pria, Bahasa Inggris)
-    |   - id-ID-ArdiNeural (Pria, Bahasa Indonesia)
+    |   - id-ID-ArdiNeural  (Pria, Bahasa Indonesia - bawaan)
     |   - id-ID-GadisNeural (Wanita, Bahasa Indonesia)
+    |   - en-US-AriaNeural  (Wanita, Bahasa Inggris)
+    |   - en-US-GuyNeural   (Pria, Bahasa Inggris)
     */
-    'voice' => env('TTS_VOICE', 'en-US-AriaNeural'),
+    'voice' => env('TTS_VOICE', 'id-ID-ArdiNeural'),
 
     /*
     |--------------------------------------------------------------------------

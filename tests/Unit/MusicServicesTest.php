@@ -62,103 +62,96 @@ describe('ChordTransposer Service', function () {
 });
 
 describe('PronunciationGenerator Service', function () {
-    test('melafalkan nada A menggunakan huruf A agar terbaca alami di UI', function () {
+    test('melafalkan nada A menggunakan huruf A dan aturan Bahasa Indonesia', function () {
         $generator = new PronunciationGenerator();
 
         expect($generator->generate('A'))->toBe('A');
         expect($generator->generate('Am'))->toBe('A minor');
-        expect($generator->generate('Am7'))->toBe('A minor 7');
-        expect($generator->generate('Amaj7'))->toBe('A majj 7');
-        expect($generator->generate('Ab'))->toBe('A flat');
-        expect($generator->generate('A#m'))->toBe('A sharp minor');
-        expect($generator->generate('A/C#'))->toBe('A over C sharp');
-        expect($generator->generate('G/A'))->toBe('G over A');
+        expect($generator->generate('Am7'))->toBe('A minor tujuh');
+        expect($generator->generate('Amaj7'))->toBe('A mayor tujuh');
+        expect($generator->generate('Ab'))->toBe('A es');
+        expect($generator->generate('A#m'))->toBe('A is minor');
+        expect($generator->generate('A/C#'))->toBe('A on Cis');
+        expect($generator->generate('G/A'))->toBe('G on A');
     });
 
     test('tidak mempengaruhi pelafalan nada lain atau kata yang mengandung huruf a', function () {
         $generator = new PronunciationGenerator();
 
-        // Kata 'majj', 'flat', 'add', 'augmented' tetap utuh tanpa perubahan
-        expect($generator->generate('Cmaj7'))->toBe('C majj 7');
-        expect($generator->generate('Bb'))->toBe('B flat');
-        expect($generator->generate('Cadd9'))->toBe('C add 9');
-        expect($generator->generate('Caug'))->toBe('C augmented');
-        expect($generator->generate('F#m7'))->toBe('F sharp minor 7');
+        // Kata kualitas dan angka mengikuti aturan Bahasa Indonesia
+        expect($generator->generate('Cmaj7'))->toBe('C mayor tujuh');
+        expect($generator->generate('Bb'))->toBe('Bes');
+        expect($generator->generate('Cadd9'))->toBe('C add sembilan');
+        expect($generator->generate('Caug'))->toBe('C aug');
+        expect($generator->generate('F#m7'))->toBe('Fis minor tujuh');
     });
 
     test('mendukung berbagai variasi jenis chord, ekstensi, alterasi, dan kombinasi modern', function () {
         $generator = new PronunciationGenerator();
 
         // Alterations & Complex extensions
-        expect($generator->generate('F#m7b5'))->toBe('F sharp minor 7 flat 5');
-        expect($generator->generate('C7#9'))->toBe('C 7 sharp 9');
-        expect($generator->generate('C7b13'))->toBe('C 7 flat 13');
-        expect($generator->generate('Cmaj7#11'))->toBe('C majj 7 sharp 11');
-        expect($generator->generate('Cmaj9'))->toBe('C majj 9');
-        expect($generator->generate('CM'))->toBe('C majj');
-        expect($generator->generate('C11'))->toBe('C 11');
-        expect($generator->generate('C13'))->toBe('C 13');
-        expect($generator->generate('Csus4'))->toBe('C suss 4');
-        expect($generator->generate('Csus2'))->toBe('C suss 2');
-        expect($generator->generate('C7sus4'))->toBe('C 7 suss 4');
-        expect($generator->generate('D+7'))->toBe('D augmented 7');
-        expect($generator->generate('Cø7'))->toBe('C half diminished 7');
-        expect($generator->generate('E7alt'))->toBe('E 7 altered');
-        expect($generator->generate('C6/9'))->toBe('C 6 9');
-        expect($generator->generate('C5'))->toBe('C 5');
-        expect($generator->generate('Am(maj7)'))->toBe('A minor majj 7');
-        expect($generator->generate('Ddim'))->toBe('D diminished');
+        expect($generator->generate('F#m7b5'))->toBe('Fis minor tujuh mol lima');
+        expect($generator->generate('C7#9'))->toBe('C tujuh kres sembilan');
+        expect($generator->generate('C7b13'))->toBe('C tujuh mol tiga belas');
+        expect($generator->generate('Cmaj7#11'))->toBe('C mayor tujuh kres sebelas');
+        expect($generator->generate('Cmaj9'))->toBe('C mayor sembilan');
+        expect($generator->generate('CM'))->toBe('C mayor');
+        expect($generator->generate('C11'))->toBe('C sebelas');
+        expect($generator->generate('C13'))->toBe('C tiga belas');
+        expect($generator->generate('Csus4'))->toBe('C sus empat');
+        expect($generator->generate('Csus2'))->toBe('C sus dua');
+        expect($generator->generate('C7sus4'))->toBe('C tujuh sus empat');
+        expect($generator->generate('D+7'))->toBe('D aug tujuh');
+        expect($generator->generate('Cø7'))->toBe('C half dim tujuh');
+        expect($generator->generate('E7alt'))->toBe('E tujuh alt');
+        expect($generator->generate('C6/9'))->toBe('C enam sembilan');
+        expect($generator->generate('C5'))->toBe('C lima');
+        expect($generator->generate('Am(maj7)'))->toBe('A minor mayor tujuh');
+        expect($generator->generate('Ddim'))->toBe('D dim');
     });
 
     test('menangani slash chord dengan bass bernada sharp atau flat', function () {
         $generator = new PronunciationGenerator();
 
-        expect($generator->generate('F#m7/C#'))->toBe('F sharp minor 7 over C sharp');
-        expect($generator->generate('C/E'))->toBe('C over E');
-        expect($generator->generate('G/B'))->toBe('G over B');
+        expect($generator->generate('F#m7/C#'))->toBe('Fis minor tujuh on Cis');
+        expect($generator->generate('C/E'))->toBe('C on E');
+        expect($generator->generate('G/B'))->toBe('G on B');
     });
 });
 
 describe('GenerateChordAudio TTS Text Formatter', function () {
-    test('menambahkan koma setelah nada A yang diikuti kata lain untuk edge-tts', function () {
+    test('meneruskan teks apa adanya ketika tts_respelling_enabled bernilai false (bawaan)', function () {
         expect(GenerateChordAudio::formatTextForTts('A'))->toBe('A');
-        expect(GenerateChordAudio::formatTextForTts('G over A'))->toBe('G over A');
-        expect(GenerateChordAudio::formatTextForTts('A minor'))->toBe('A, minor');
-        expect(GenerateChordAudio::formatTextForTts('A major 7'))->toBe('A, majj 7');
-        expect(GenerateChordAudio::formatTextForTts('A majj 7'))->toBe('A, majj 7');
-        expect(GenerateChordAudio::formatTextForTts('A over C sharp'))->toBe('A, over C sharp');
-        expect(GenerateChordAudio::formatTextForTts('G over A flat'))->toBe('G over A, flat');
-        expect(GenerateChordAudio::formatTextForTts('G over A sharp'))->toBe('G over A, sharp');
-        expect(GenerateChordAudio::formatTextForTts('A suss four'))->toBe('A, suss four');
-        expect(GenerateChordAudio::formatTextForTts('A sus four'))->toBe('A, suss four');
+        expect(GenerateChordAudio::formatTextForTts('A minor'))->toBe('A minor');
+        expect(GenerateChordAudio::formatTextForTts('Cis minor'))->toBe('Cis minor');
+        expect(GenerateChordAudio::formatTextForTts('C mayor tujuh'))->toBe('C mayor tujuh');
+        expect(GenerateChordAudio::formatTextForTts('D sus empat'))->toBe('D sus empat');
+        expect(GenerateChordAudio::formatTextForTts('G on Bes'))->toBe('G on Bes');
     });
 
-    test('menormalisasi token major/maj dan sus menjadi majj dan suss untuk edge-tts', function () {
-        expect(GenerateChordAudio::formatTextForTts('C major 7'))->toBe('C majj 7');
-        expect(GenerateChordAudio::formatTextForTts('C Major Nine'))->toBe('C majj Nine');
-        expect(GenerateChordAudio::formatTextForTts('C maj 7'))->toBe('C majj 7');
-        expect(GenerateChordAudio::formatTextForTts('C major 7 sharp 11'))->toBe('C majj 7 sharp 11');
-        expect(GenerateChordAudio::formatTextForTts('A minor major 7'))->toBe('A, minor majj 7');
-        expect(GenerateChordAudio::formatTextForTts('C majj seven'))->toBe('C majj seven');
-        expect(GenerateChordAudio::formatTextForTts('D sus four'))->toBe('D suss four');
-        expect(GenerateChordAudio::formatTextForTts('D suss 4'))->toBe('D suss 4');
-    });
+    test('menerapkan peta tts_respelling ketika tts_respelling_enabled bernilai true', function () {
+        $generator = new PronunciationGenerator([
+            'tts_respelling_enabled' => true,
+            'tts_respelling'         => [
+                'Cis' => 'Chis',
+                'sus' => 'suss',
+            ],
+        ]);
 
-    test('menormalisasi data lama Ae dan tidak mengubah kata non-nada A', function () {
-        expect(GenerateChordAudio::formatTextForTts('Ae'))->toBe('A');
-        expect(GenerateChordAudio::formatTextForTts('Ae minor'))->toBe('A, minor');
-        expect(GenerateChordAudio::formatTextForTts('G over Ae'))->toBe('G over A');
-        expect(GenerateChordAudio::formatTextForTts('C minor 7'))->toBe('C minor 7');
-        expect(GenerateChordAudio::formatTextForTts('C add 9'))->toBe('C add 9');
-        expect(GenerateChordAudio::formatTextForTts('A, minor'))->toBe('A, minor');
+        expect(GenerateChordAudio::formatTextForTts('Cis on D', $generator))->toBe('Chis on D');
+        expect(GenerateChordAudio::formatTextForTts('D sus empat', $generator))->toBe('D suss empat');
+        expect(GenerateChordAudio::formatTextForTts('G on Bes', $generator))->toBe('G on Bes');
     });
 
     test('membentuk nama file audio yang unik untuk slash chord tanpa bentrok dengan chord flat', function () {
-        expect(GenerateChordAudio::fileName('G/B'))->toBe('goverb');
+        expect(GenerateChordAudio::fileName('F#m'))->toBe('fkresm');
+        expect(GenerateChordAudio::fileName('F♯m'))->toBe('fkresm');
+        expect(GenerateChordAudio::fileName('Bb'))->toBe('bb');
+        expect(GenerateChordAudio::fileName('G/B'))->toBe('gonb');
         expect(GenerateChordAudio::fileName('Gb'))->toBe('gb');
-        expect(GenerateChordAudio::fileName('D/F#'))->toBe('doverfsharp');
-        expect(GenerateChordAudio::fileName('A/C#'))->toBe('aovercsharp');
-        expect(GenerateChordAudio::fileName('Bb/D'))->toBe('bboverd');
+        expect(GenerateChordAudio::fileName('D/F#'))->toBe('donfkres');
+        expect(GenerateChordAudio::fileName('A/C#'))->toBe('aonckres');
+        expect(GenerateChordAudio::fileName('Bb/D'))->toBe('bbond');
     });
 });
 

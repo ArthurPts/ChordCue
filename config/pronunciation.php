@@ -4,11 +4,9 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Pelafalan Nada Akar & Bass (Notes)
+    | Pelafalan Nada Alami (Notes)
     |--------------------------------------------------------------------------
-    | Seluruh nada akar & bass (A s/d G) menggunakan huruf alfabetnya masing-masing
-    | agar terbaca alami di UI; penyesuaian khusus TTS (mis. jeda koma setelah 'A'
-    | agar tidak dibaca sebagai artikel /ə/) ditangani di GenerateChordAudio.
+    | Nama pengucapan 7 nada alami (A s/d G) untuk nada akar dan bass.
     */
     'notes' => [
         'A' => 'A',
@@ -22,82 +20,165 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Pemetaan Simbol Kualitas, Ekstensi, Alterasi, dan Aksidental (Symbols)
+    | Aksidental Nada Akar & Bass (Accidentals)
     |--------------------------------------------------------------------------
-    | Mendukung berbagai variasi jenis chord, ekstensi, alterasi, dan kombinasi
-    | musik modern secara modular melalui pencocokan terpanjang (greedy matching).
+    | Untuk nada konsonan (B, C, D, F, G), aksidental digabung ke nama nada:
+    |   # / ♯ -> 'is' (C# -> Cis, F# -> Fis, B# -> Bis)
+    |   b / ♭ -> 'es' (Bb -> Bes, Db -> Des, Gb -> Ges, Cb -> Ces, Fb -> Fes)
+    | Untuk nada vokal di spaced_accidental_notes (A dan E), diberi spasi:
+    |   A# -> 'A is', Ab -> 'A es', E# -> 'E is', Eb -> 'E es'
+    */
+    'accidentals' => [
+        '#' => 'is',
+        '♯' => 'is',
+        'b' => 'es',
+        '♭' => 'es',
+    ],
+
+    'spaced_accidental_notes' => ['A', 'E'],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pengecualian Flat Tradisional (Irregular Flats)
+    |--------------------------------------------------------------------------
+    | Jika use_irregular_flats bernilai true: Eb -> 'Es', Ab -> 'As'.
+    | Jika false (bawaan): mengikuti spaced_accidental_notes (Eb -> 'E es', Ab -> 'A es').
+    */
+    'use_irregular_flats' => false,
+
+    'irregular_flats' => [
+        'E' => 'Es',
+        'A' => 'As',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Penghubung Slash Bass Chord (Slash)
+    |--------------------------------------------------------------------------
+    | Kata penghubung untuk '/' pada slash chord (mis. C#/D -> 'Cis on D').
+    */
+    'slash' => 'on',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pemetaan Simbol Kualitas, Ekstensi, dan Alterasi (Symbols)
+    |--------------------------------------------------------------------------
+    | Dicocokkan secara greedy longest-match di dalam bagian suffix chord.
+    | Catatan: '-' pada suffix diartikan 'minor' kecuali bila langsung mengikuti
+    | angka (mis. C7-5 / Cm7-5 -> menggunakan aksidental flat pada suffix).
     */
     'symbols' => [
-        // Aksidental nada & alterasi
-        '#'    => 'sharp',
-        'b'    => 'flat',
-        '♯'    => 'sharp',
-        '♭'    => 'flat',
-
-        // Kualitas dasar & variasi penulisan triad / ketujuh
-        'major'=> 'majj',
-        'maj'  => 'majj',
-        'M'    => 'majj',
-        'Δ'    => 'majj',
-        'minor'=> 'minor',
-        'min'  => 'minor',
-        'm'    => 'minor',
-        '-'    => 'minor',
+        // Kualitas dasar (mayor & minor)
+        'major'    => 'mayor',
+        'maj'      => 'mayor',
+        'M'        => 'mayor',
+        'Δ'        => 'mayor',
+        'minor'    => 'minor',
+        'min'      => 'minor',
+        'm'        => 'minor',
+        '-'        => 'minor',
 
         // Diminished & Half-Diminished
-        'dim'      => 'diminished',
-        'o'        => 'diminished',
-        '°'        => 'diminished',
-        'ø'        => 'half diminished',
-        'half-dim' => 'half diminished',
+        'dim'      => 'dim',
+        'o'        => 'dim',
+        '°'        => 'dim',
+        'half-dim' => 'half dim',
+        'ø'        => 'half dim',
 
         // Augmented & Altered
-        'aug'  => 'augmented',
-        '+'    => 'augmented',
-        'alt'  => 'altered',
+        'aug'      => 'aug',
+        '+'        => 'aug',
+        'alt'      => 'alt',
 
-        // Suspended, Added, Dominant
-        'sus'  => 'suss',
-        'add'  => 'add',
-        'dom'  => 'dominant',
-        'omit' => 'omit',
-        'no'   => 'no',
-
-        // Bass / Slash Chord
-        '/'    => 'over',
-
-        // Compound Extensions & Alterations (Pencocokan terpanjang)
-        'maj7'     => 'majj 7',
-        'maj9'     => 'majj 9',
-        'maj11'    => 'majj 11',
-        'maj13'    => 'majj 13',
-        'min7'     => 'minor 7',
-        'min9'     => 'minor 9',
-        'min11'    => 'minor 11',
-        'min13'    => 'minor 13',
-        'm7b5'     => 'minor 7 flat 5',
-        'm7-5'     => 'minor 7 flat 5',
-        'm7'       => 'minor 7',
-        'm9'       => 'minor 9',
-        'm11'      => 'minor 11',
-        'm13'      => 'minor 13',
-        'm6'       => 'minor 6',
-        'dim7'     => 'diminished 7',
-        'aug7'     => 'augmented 7',
-        '+7'       => 'augmented 7',
-        'ø7'       => 'half diminished 7',
-        '°7'       => 'diminished 7',
-        'sus4'     => 'suss 4',
-        'sus2'     => 'suss 2',
-        '7sus4'    => '7 suss 4',
-        '7sus2'    => '7 suss 2',
-        '9sus4'    => '9 suss 4',
-        'add9'     => 'add 9',
-        'add11'    => 'add 11',
-        'add2'     => 'add 2',
-        'add4'     => 'add 4',
-        '6/9'      => '6 9',
-        '69'       => '6 9',
+        // Suspended, Added, Dominant, Omit, No
+        'sus'      => 'sus',
+        'add'      => 'add',
+        'dom'      => 'dom',
+        'omit'     => 'omit',
+        'no'       => 'no',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Aksidental di Dalam Suffix (Suffix Accidentals)
+    |--------------------------------------------------------------------------
+    | Gaya pelafalan '#' dan 'b' (serta '-' setelah angka) di dalam suffix
+    | seperti F#m7b5, C7#9, Cmaj7#11, C7-5.
+    | Pilihan suffix_accidental_style: 'indonesian', 'is_es', 'english'.
+    */
+    'suffix_accidental_style' => 'indonesian',
+
+    'suffix_accidentals' => [
+        'indonesian' => [
+            '#' => 'kres',
+            '♯' => 'kres',
+            'b' => 'mol',
+            '♭' => 'mol',
+        ],
+        'is_es' => [
+            '#' => 'is',
+            '♯' => 'is',
+            'b' => 'es',
+            '♭' => 'es',
+        ],
+        'english' => [
+            '#' => 'sharp',
+            '♯' => 'sharp',
+            'b' => 'flat',
+            '♭' => 'flat',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pelafalan Angka Ekstensi (Numbers)
+    |--------------------------------------------------------------------------
+    | Jika numbers_as_words bernilai true, angka diubah menjadi kata bahasa
+    | Indonesia (mis. 7 -> 'tujuh', 11 -> 'sebelas', 13 -> 'tiga belas') dengan
+    | fallback per digit untuk angka yang tidak terdaftar.
+    | Jika false, angka dibiarkan dalam bentuk digit ('7', '11', '13').
+    */
+    'numbers_as_words' => true,
+
+    'numbers' => [
+        '0'  => 'nol',
+        '1'  => 'satu',
+        '2'  => 'dua',
+        '3'  => 'tiga',
+        '4'  => 'empat',
+        '5'  => 'lima',
+        '6'  => 'enam',
+        '7'  => 'tujuh',
+        '8'  => 'delapan',
+        '9'  => 'sembilan',
+        '10' => 'sepuluh',
+        '11' => 'sebelas',
+        '12' => 'dua belas',
+        '13' => 'tiga belas',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Angka Majemuk yang Dipecah (Split Numbers)
+    |--------------------------------------------------------------------------
+    | Menangani notasi khusus seperti '6/9' dan '69' agar dipecah menjadi token
+    | angka terpisah yang tetap mengikuti aturan numbers_as_words.
+    */
+    'split_numbers' => [
+        '6/9' => ['6', '9'],
+        '69'  => ['6', '9'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lapisan Respelling Opsional Khusus TTS (TTS Respelling)
+    |--------------------------------------------------------------------------
+    | Jika tts_respelling_enabled bernilai true, pemetaan di bawah diterapkan
+    | HANYA saat menghasilkan audio TTS (tidak pernah disimpan ke kolom
+    | chords.pronunciation). Nonaktif secara bawaan sampai uji dengar.
+    */
+    'tts_respelling_enabled' => false,
+
+    'tts_respelling' => [],
 
 ];

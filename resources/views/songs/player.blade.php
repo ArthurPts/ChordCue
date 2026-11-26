@@ -359,7 +359,7 @@
                 <!-- Nada Dasar -->
                 <div class="bg-surface-2 border border-subtle rounded-sm px-12 py-6 text-caption flex items-center gap-6">
                     <span class="text-ink-tertiary font-medium">Nada:</span>
-                    <span class="font-mono font-medium text-accent text-body" x-text="displayKey">{{ $displayDefaultKey }}</span>
+                    <span class="font-mono font-medium text-ink text-body" x-text="displayKey">{{ $displayDefaultKey }}</span>
                 </div>
 
                 <!-- BPM Lagu Asli -->

@@ -25,7 +25,7 @@
     </div>
 
     <!-- Direct Diagram Image (No Inner Outline/Box) -->
-    <div class="flex items-center justify-center aspect-[4/5] overflow-hidden">
+    <div class="bg-white flex items-center justify-center aspect-[4/5] overflow-hidden">
         <x-chords.chord-diagram :chord="$chord" />
     </div>
 </div>

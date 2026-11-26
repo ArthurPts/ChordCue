@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Services\PronunciationGenerator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -41,10 +42,10 @@ class GenerateChordAudio implements ShouldQueue
      */
     public static function fileName(string $chordName): string
     {
-        // "F#m" -> "fsharpm", "Bb" -> "bb", "G/B" -> "goverb" (cegah tabrakan dengan "Gb")
+        // "F#m" -> "fkresm", "Bb" -> "bb", "D/F#" -> "donfkres", "G/B" -> "gonb" (cegah bentrok "Gb")
         return Str::of($chordName)
-            ->replace('#', 'sharp')
-            ->replace('/', 'over')
+            ->replace(['#', '♯'], 'kres')
+            ->replace('/', 'on')
             ->lower()
             ->replaceMatches('/[^a-z0-9]+/', '')
             ->toString();
@@ -63,6 +64,7 @@ class GenerateChordAudio implements ShouldQueue
             return; // sudah ada
         }
 
+        $oldFilePath = $chord->file_path;
         $relative = trim(config('tts.directory'), '/') . '/' . self::fileName($chord->name) . '.mp3';
         $disk->makeDirectory(dirname($relative));
         $absolute = $disk->path($relative);
@@ -89,37 +91,25 @@ class GenerateChordAudio implements ShouldQueue
         }
 
         DB::table('chords')->where('id', $chord->id)->update(['file_path' => $relative]);
+
+        if ($oldFilePath && $oldFilePath !== $relative && $disk->exists($oldFilePath)) {
+            $disk->delete($oldFilePath);
+        }
     }
 
     /**
-     * Menyesuaikan teks pelafalan untuk edge-tts agar huruf nada 'A' tetap
-     * dilafalkan sebagai /eɪ/ (bukan artikel /ə/), kata 'major'/'maj' menjadi
-     * 'majj' (/mædʒ/), dan kata 'sus' menjadi 'suss'.
+     * Menyesuaikan teks pelafalan untuk edge-tts menggunakan lapisan opsional
+     * tts_respelling di config/pronunciation.php (nonaktif secara bawaan).
      *
      * Fungsi ini digunakan pada:
      * - GenerateChordAudio::handle
-     * - Pengujian unit MusicServicesTest
+     * - Pengujian unit PronunciationGeneratorTest & MusicServicesTest
      */
-    public static function formatTextForTts(string $rawText): string
+    public static function formatTextForTts(string $rawText, ?PronunciationGenerator $generator = null): string
     {
-        $trimmedText = trim($rawText);
-        if ($trimmedText === '') {
-            return '';
-        }
+        $resolvedGenerator = $generator ?? new PronunciationGenerator();
 
-        // Kembalikan teks lama yang memakai 'Ae' sebagai token nada ke 'A'
-        $normalizedText = preg_replace('/\bAe\b/', 'A', $trimmedText) ?? $trimmedText;
-
-        // Ubah token 'major' atau 'maj' menjadi 'majj' agar edge-tts melafalkan /mædʒ/
-        $normalizedText = preg_replace('/\bmaj(?:or)?\b/i', 'majj', $normalizedText) ?? $normalizedText;
-
-        // Ubah token 'sus' menjadi 'suss' agar edge-tts tidak mengejanya 'S U S'
-        $normalizedText = preg_replace('/\bsus\b/i', 'suss', $normalizedText) ?? $normalizedText;
-
-        // Sisipkan koma setelah huruf nada tunggal 'A' bila diikuti kata lain
-        // (mis. "A minor" -> "A, minor", "G over A flat" -> "G over A, flat")
-        // agar mesin TTS en-US tidak menganggapnya artikel "a" (/ə/).
-        return preg_replace('/\bA(?=\s+\S)/', 'A,', $normalizedText) ?? $normalizedText;
+        return $resolvedGenerator->applyTtsRespelling($rawText);
     }
 
     /**

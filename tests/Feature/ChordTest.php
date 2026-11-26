@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\GenerateChordAudio;
 use App\Models\Chord;
 use App\Models\ChordDiagram;
 use App\Models\ChordPlacement;
@@ -8,6 +9,7 @@ use App\Models\Song;
 use App\Models\SongSection;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 test('guest can view pustaka chord without admin controls', function () {
@@ -52,14 +54,25 @@ test('admin can view pustaka chord with admin controls', function () {
 });
 
 test('admin can search chord in pustaka chord', function () {
-    $response = $this->get('/chords?q=Dsus4');
+    Chord::firstOrCreate(
+        ['name' => 'F#m7'],
+        ['pronunciation' => 'F sharp minor seven']
+    );
 
-    $response->assertStatus(200);
-    $response->assertSee('Dsus4');
+    // Pencarian berdasarkan nama chord berhasil menemukan chord terkait
+    $responseByName = $this->get('/chords?q=F%23m7');
+    $responseByName->assertStatus(200);
+    $responseByName->assertSee('F#m7');
+
+    // Pencarian berdasarkan pronunciation tidak memunculkan chord
+    $responseByPronunciation = $this->get('/chords?q=sharp%20minor');
+    $responseByPronunciation->assertStatus(200);
+    $responseByPronunciation->assertSee('Chord Tidak Ditemukan');
 });
 
 test('admin can create a new chord with optional diagram upload', function () {
     Storage::fake('public');
+    Queue::fake();
     $admin = User::factory()->create(['role' => 'admin']);
 
     $file = UploadedFile::fake()->image('chord_diagram.png');
@@ -80,9 +93,13 @@ test('admin can create a new chord with optional diagram upload', function () {
     $this->assertDatabaseHas('chord_diagrams', [
         'chord_id' => $createdChord->id,
     ]);
+    Queue::assertPushed(GenerateChordAudio::class, function (GenerateChordAudio $job) use ($createdChord) {
+        return $job->chordId === $createdChord->id;
+    });
 });
 
 test('admin can create a new chord without diagram and uses default placeholder', function () {
+    Queue::fake();
     $admin = User::factory()->create(['role' => 'admin']);
 
     $response = $this->actingAs($admin)->post('/chords', [
@@ -97,6 +114,9 @@ test('admin can create a new chord without diagram and uses default placeholder'
 
     $createdChord = Chord::where('name', 'Cdim7')->first();
     expect($createdChord->diagram_url)->toContain('No_Image_Available.jpg');
+    Queue::assertPushed(GenerateChordAudio::class, function (GenerateChordAudio $job) use ($createdChord) {
+        return $job->chordId === $createdChord->id;
+    });
 });
 
 test('regular user cannot create a chord', function () {
@@ -114,6 +134,7 @@ test('regular user cannot create a chord', function () {
 });
 
 test('admin can update an existing chord', function () {
+    Queue::fake();
     $admin = User::factory()->create(['role' => 'admin']);
     $chord = Chord::create([
         'name' => 'OldChord',
@@ -131,6 +152,36 @@ test('admin can update an existing chord', function () {
         'name' => 'UpdatedChord',
         'pronunciation' => 'Updated Pronunciation',
     ]);
+    Queue::assertPushed(GenerateChordAudio::class, function (GenerateChordAudio $job) use ($chord) {
+        return $job->chordId === $chord->id && $job->force === true;
+    });
+});
+
+test('updating chord name or pronunciation removes old audio file and queues tts regeneration', function () {
+    Storage::fake('public');
+    Queue::fake();
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $oldAudioPath = 'chords/audio/oldaudio.mp3';
+    Storage::disk('public')->put($oldAudioPath, 'old-audio-bytes');
+
+    $chord = Chord::create([
+        'name' => 'F#mTest',
+        'pronunciation' => 'Fis minor lama',
+        'file_path' => $oldAudioPath,
+    ]);
+
+    $response = $this->actingAs($admin)->put("/chords/{$chord->id}", [
+        'name' => 'F#mTest',
+        'pronunciation' => 'Fis minor baru',
+    ]);
+
+    $response->assertRedirect();
+    Storage::disk('public')->assertMissing($oldAudioPath);
+    expect($chord->fresh()->file_path)->toBeNull();
+    Queue::assertPushed(GenerateChordAudio::class, function (GenerateChordAudio $job) use ($chord) {
+        return $job->chordId === $chord->id && $job->force === true;
+    });
 });
 
 test('regular user cannot update a chord', function () {
@@ -216,14 +267,18 @@ test('deleting a chord using default placeholder preserves No_Image_Available.jp
 
 test('updating a chord diagram removes the old diagram file from storage', function () {
     Storage::fake('public');
+    Queue::fake();
     $admin = User::factory()->create(['role' => 'admin']);
 
     $oldPath = 'chords/diagrams/old-diagram.png';
+    $audioPath = 'chords/audio/replacediagramchord.mp3';
     Storage::disk('public')->put($oldPath, 'old-image');
+    Storage::disk('public')->put($audioPath, 'existing-audio');
 
     $chord = Chord::create([
         'name' => 'ReplaceDiagramChord',
         'pronunciation' => 'Replace Diagram Chord',
+        'file_path' => $audioPath,
     ]);
     ChordDiagram::create([
         'chord_id' => $chord->id,
@@ -239,6 +294,8 @@ test('updating a chord diagram removes the old diagram file from storage', funct
 
     $response->assertRedirect();
     Storage::disk('public')->assertMissing($oldPath);
+    Storage::disk('public')->assertExists($audioPath);
+    Queue::assertNotPushed(GenerateChordAudio::class);
     $newDiagram = $chord->fresh()->diagrams()->first();
     expect($newDiagram)->not->toBeNull();
     Storage::disk('public')->assertExists($newDiagram->file_path);

@@ -28,17 +28,20 @@ class ServeAllCommand extends Command
     {
         $php = PHP_BINARY;
         $artisan = base_path('artisan');
+        $childEnv = $this->buildCleanChildEnv();
 
         $this->processes['server'] = new Process(
             [$php, $artisan, 'serve', '--host=' . $this->option('host'), '--port=' . $this->option('port')],
-            base_path()
+            base_path(),
+            $childEnv
         );
 
         if (!$this->option('no-worker')) {
-            // queue:listen memuat ulang kode tiap job, nyaman untuk development
+            // queue:listen memuat ulang kode & .env tiap job, nyaman untuk development
             $this->processes['worker'] = new Process(
                 [$php, $artisan, 'queue:listen', '--tries=3', '--timeout=120', '--sleep=1'],
-                base_path()
+                base_path(),
+                $childEnv
             );
         }
 
@@ -72,6 +75,43 @@ class ServeAllCommand extends Command
         $this->stopAll();
 
         return $exit;
+    }
+
+    /**
+     * Menghapus variabel yang berasal dari file .env pada environment proses anak
+     * agar artisan serve & queue:listen selalu membaca ulang .env terbaru,
+     * bukan mewarisi nilai .env lama saat serve:all pertama kali dijalankan.
+     *
+     * Fungsi ini digunakan pada:
+     * - ServeAllCommand::handle
+     *
+     * @return array<string, false>
+     */
+    private function buildCleanChildEnv(): array
+    {
+        $envFile = base_path('.env');
+        if (!is_file($envFile)) {
+            return [];
+        }
+
+        $unsetMap = [];
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (!is_array($lines)) {
+            return [];
+        }
+
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if ($trimmed === '' || str_starts_with($trimmed, '#')) {
+                continue;
+            }
+
+            if (preg_match('/^(?:export\s+)?([A-Z0-9_]+)\s*=/i', $trimmed, $matches) === 1) {
+                $unsetMap[$matches[1]] = false;
+            }
+        }
+
+        return $unsetMap;
     }
 
     private function stopAll(): void

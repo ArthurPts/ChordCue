@@ -450,7 +450,7 @@ Tabel standar Laravel/Breeze (`sessions`, `password_reset_tokens`, `jobs`, `fail
 | Kolom | Keterangan |
 |---|---|
 | `name` | Nama chord, unik (mis. `F#m7`) |
-| `pronunciation` | Teks yang diucapkan TTS (mis. `F sharp minor 7`) |
+| `pronunciation` | Teks yang diucapkan TTS (mis. `Fis minor tujuh`) |
 | `file_path` | Path audio TTS; `NULL` selama audio belum tersedia |
 
 **`chord_diagrams`**
@@ -605,34 +605,43 @@ Proses ini hanya membaca data lagu; tidak ada `UPDATE` pada `chord_placements` m
 
 ### 7.6 Pembentukan Pengucapan (PronunciationGenerator)
 
-Aturan simbol → bacaan disimpan di **`config/pronunciation.php`** sebagai array `simbol => bacaan`, dan dibaca oleh class `PronunciationGenerator`. Mengubah aturan berarti mengubah file tersebut lalu men-deploy; tidak ada tabel atau antarmuka admin untuk aturan. Perubahan aturan hanya berlaku untuk chord yang dibuat otomatis sesudahnya dan tidak mengubah pengucapan chord yang sudah ada. Untuk memperbaiki pengucapan chord tertentu, admin mengubah kolom `pronunciation` lewat Kelola Chord (audio dibuat ulang).
+Aturan pelafalan chord Bahasa Indonesia disimpan seluruhnya di **`config/pronunciation.php`** (tanpa kata yang di-hardcode di PHP) dan dibaca oleh class `PronunciationGenerator`. Mengubah aturan berarti mengubah file konfigurasi tersebut lalu menjalankan perintah `php artisan chords:regenerate-pronunciation --apply` dan `php artisan chords:generate-audio --force` jika ingin memperbarui chord yang sudah ada. Untuk memperbaiki pengucapan chord tertentu secara manual, admin mengubah kolom `pronunciation` lewat Kelola Chord.
 
-**Contoh isi aturan awal**
+**Struktur ringkas `config/pronunciation.php` (bawaan Bahasa Indonesia)**
 
 ```php
 return [
-    '#'    => 'sharp',
-    'b'    => 'flat',
-    'm'    => 'minor',
-    'maj'  => 'major',
-    'dim'  => 'diminished',
-    'aug'  => 'augmented',
-    'sus'  => 'suspended',
-    'add'  => 'add',
-    '/'    => 'over',
+    'notes'                   => ['A' => 'A', /* ... */ 'G' => 'G'],
+    'accidentals'             => ['#' => 'is', '♯' => 'is', 'b' => 'es', '♭' => 'es'],
+    'spaced_accidental_notes' => ['A', 'E'],
+    'use_irregular_flats'     => false,
+    'irregular_flats'         => ['E' => 'Es', 'A' => 'As'],
+    'slash'                   => 'on',
+    'symbols'                 => [
+        'major' => 'mayor', 'maj' => 'mayor', 'M' => 'mayor', 'Δ' => 'mayor',
+        'minor' => 'minor', 'min' => 'minor', 'm' => 'minor', '-' => 'minor',
+        'dim'   => 'dim',   'half-dim' => 'half dim', 'ø' => 'half dim',
+        'aug'   => 'aug',   '+' => 'aug', 'alt' => 'alt',
+        'sus'   => 'sus',   'add' => 'add', 'dom' => 'dom', 'omit' => 'omit', 'no' => 'no',
+    ],
+    'suffix_accidental_style' => 'indonesian', // 'indonesian' (kres/mol), 'is_es', atau 'english'
+    'numbers_as_words'        => true,         // 7 -> tujuh, 11 -> sebelas, 13 -> tiga belas
+    'split_numbers'           => ['6/9' => ['6', '9'], '69' => ['6', '9']],
+    'tts_respelling_enabled'  => false,        // opsional khusus audio TTS, tidak disimpan ke DB
+    'tts_respelling'          => [],
 ];
 ```
 
 **Algoritma**
 
-1. Huruf akar (A–G) dibaca sebagai huruf itu sendiri.
-2. Sisa nama dipindai dari kiri; di setiap posisi diambil simbol **terpanjang** yang cocok (sensitif huruf besar/kecil), lalu diganti bacaannya.
-3. Karakter tanpa aturan (mis. angka) dibiarkan.
-4. Hasil digabung dengan spasi.
+1. Jika chord berupa slash chord (`/...` diikuti nada `A–G` + aksidental opsional), pisahkan chord utama dan nada bass; hubungkan dengan `slash` (`on`).
+2. Nada akar dan nada bass menggabungkan aksidental ke nama nada untuk konsonan (`C#` → `Cis`, `Bb` → `Bes`, `B#` → `Bis`, `Cb` → `Ces`), sedangkan nada vokal di `spaced_accidental_notes` (`A`, `E`) diberi spasi (`A#` → `A is`, `Ab` → `A es`, `E#` → `E is`, `Eb` → `E es`). Jika `use_irregular_flats` diaktifkan, `Eb` → `Es` dan `Ab` → `As`.
+3. Bagian suffix dipindai dari kiri menggunakan UTF-8 greedy longest-match: angka majemuk (`split_numbers` seperti `6/9`, `69`), simbol multi-karakter (`half-dim`, `major`, `minor`, `omit`, `maj`, `sus`, dst.), aturan tanda `-` setelah angka sebagai flat suffix (`C7-5` → `mol`, sedangkan `C-7` → `minor`), aksidental suffix (`suffix_accidentals` sesuai `suffix_accidental_style`), simbol satu karakter, dan rangkaian digit (`numbers` sesuai `numbers_as_words` dengan fallback per digit).
+4. Hasil digabung dengan spasi. Saat audio dibuat di `GenerateChordAudio`, metode terpisah `applyTtsRespelling()` diterapkan hanya bila `tts_respelling_enabled` bernilai `true`.
 
-Contoh: `F#m7` → `F sharp minor 7`; `Cmaj7` → `C major 7`; `G/B` → `G over B`; `Bb` → `B flat`.
+Contoh: `F#m7` → `Fis minor tujuh`; `Cmaj7` → `C mayor tujuh`; `F#m7b5` → `Fis minor tujuh mol lima`; `C#/D` → `Cis on D`; `G/Bb` → `G on Bes`; `Eb` → `E es`; `Ab` → `A es`; `E#` → `E is`; `A#` → `A is`; `Bb` → `Bes`.
 
-Chord yang dibuat admin tidak memakai algoritma ini; admin mengetik pengucapannya sendiri.
+Chord yang dibuat admin secara manual tidak memakai algoritma ini; admin mengetik pengucapannya sendiri.
 
 ### 7.7 Hak Akses (Policy)
 
@@ -903,5 +912,5 @@ Seluruhnya memakai session dan token CSRF.
 | **Diagram chord** | Gambar posisi jari untuk sebuah chord; satu chord dapat memiliki beberapa |
 | **Pustaka Chord** | Halaman referensi yang menampilkan semua chord beserta diagramnya, dengan filter chord dasar |
 | **Daftar chord** | Daftar pilihan chord di Editor Simple dan Editor Beat; hanya menampilkan nama chord dan dapat dicari berdasarkan penulisan nama |
-| **Aturan pengucapan** | Pemetaan simbol ke bacaan (mis. `#` → sharp) di `config/pronunciation.php` untuk membentuk pengucapan chord otomatis |
+| **Aturan pengucapan** | Pemetaan nada, aksidental, simbol, dan angka Bahasa Indonesia (mis. `C#` → `Cis`, `Bb` → `Bes`, `/` → `on`) di `config/pronunciation.php` untuk membentuk pengucapan chord otomatis |
 | **Kategori bertipe** | Kategori lagu dengan tipe `mood`, `location`, atau `genre` |

@@ -59,7 +59,7 @@
             </div>
             <div class="font-mono min-w-0 truncate" title="Nada Dasar: {{ $defaultKey }}">
                 <span class="text-ink-tertiary">Nada:</span>
-                <span class="font-medium {{ $defaultKey !== '-' ? 'text-accent' : 'text-ink' }} ml-2">{{ $defaultKey }}</span>
+                <span class="font-medium text-ink ml-2">{{ $defaultKey }}</span>
             </div>
             <div class="font-mono shrink-0">
                 <span class="text-ink-tertiary">Birama:</span>

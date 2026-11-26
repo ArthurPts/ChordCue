@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\GenerateChordAudio;
 use App\Models\Chord;
 use App\Models\ChordDiagram;
 use DomainException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ChordController extends Controller
@@ -19,10 +21,7 @@ class ChordController extends Controller
 
         if ($request->filled('q')) {
             $search = $request->input('q');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('pronunciation', 'like', "%{$search}%");
-            });
+            $query->where('name', 'like', "%{$search}%");
         }
 
         // Paginate 25 kartu per halaman
@@ -44,10 +43,14 @@ class ChordController extends Controller
     }
 
     /**
-     * Simpan chord baru ke database (Admin Only).
+     * Simpan chord baru ke database beserta antrean pembuatan audio TTS (Admin Only).
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: POST /chords (chords.store)
      */
     public function store(Request $request)
     {
+        // 1. Otorisasi & Validasi Input
         if (!auth()->check() || auth()->user()->role !== 'admin') {
             abort(403, 'Akses khusus administrator.');
         }
@@ -63,6 +66,7 @@ class ChordController extends Controller
             'diagram.image' => 'File diagram harus berupa gambar.',
         ]);
 
+        // 2. Query Database & Simpan File
         $chord = Chord::create([
             'name' => trim($validated['name']),
             'pronunciation' => trim($validated['pronunciation']),
@@ -81,15 +85,25 @@ class ChordController extends Controller
             ]);
         }
 
+        if (config('tts.enabled')) {
+            GenerateChordAudio::dispatch($chord->id);
+        }
+
+        // 3. Response / Redirect
         return redirect()->route('chords.index', ['selected' => $chord->id])
             ->with('success', 'Chord berhasil ditambahkan.');
     }
 
     /**
-     * Perbarui data chord (Admin Only).
+     * Perbarui data chord; bila nama atau cara baca berubah, hapus audio lama
+     * lalu buat ulang audio TTS baru (Admin Only).
+     *
+     * Fungsi ini digunakan pada:
+     * - Route: PUT /chords/{chord} (chords.update)
      */
     public function update(Request $request, Chord $chord)
     {
+        // 1. Otorisasi & Validasi Input
         if (!auth()->check() || auth()->user()->role !== 'admin') {
             abort(403, 'Akses khusus administrator.');
         }
@@ -105,10 +119,33 @@ class ChordController extends Controller
             'diagram.image' => 'File diagram harus berupa gambar.',
         ]);
 
-        $chord->update([
-            'name' => trim($validated['name']),
-            'pronunciation' => trim($validated['pronunciation']),
-        ]);
+        // 2. Query Database & Perbarui File Audio/Diagram
+        $newName = trim($validated['name']);
+        $newPronunciation = trim($validated['pronunciation']);
+        $oldAudioPath = $chord->file_path;
+        $needsAudioRegeneration = ($chord->name !== $newName || $chord->pronunciation !== $newPronunciation);
+
+        $updatePayload = [
+            'name' => $newName,
+            'pronunciation' => $newPronunciation,
+        ];
+
+        if ($needsAudioRegeneration) {
+            $updatePayload['file_path'] = null;
+        }
+
+        $chord->update($updatePayload);
+
+        if ($needsAudioRegeneration) {
+            $ttsDiskName = config('tts.disk', 'public');
+            if ($oldAudioPath && Storage::disk($ttsDiskName)->exists($oldAudioPath)) {
+                Storage::disk($ttsDiskName)->delete($oldAudioPath);
+            }
+
+            if (config('tts.enabled')) {
+                GenerateChordAudio::dispatch($chord->id, true);
+            }
+        }
 
         if ($request->hasFile('diagram')) {
             $path = $request->file('diagram')->store('chords/diagrams', 'public');
@@ -121,6 +158,7 @@ class ChordController extends Controller
             ]);
         }
 
+        // 3. Response / Redirect
         return redirect()->route('chords.index', ['selected' => $chord->id])
             ->with('success', 'Chord berhasil diperbarui.');
     }
