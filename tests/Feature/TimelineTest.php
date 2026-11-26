@@ -265,6 +265,35 @@ test('transpose ke chord yang belum ada otomatis membuatnya di DB dan mendispatc
     expect($data['pending_chords'])->toBe(2);
 });
 
+test('transpose ke chord yang sudah ada di DB tetapi belum memiliki audio otomatis mendispatch TTS job', function () {
+    Queue::fake();
+
+    // Chord D dan Bm sudah ada di database tetapi belum memiliki file audio (file_path = null)
+    $existingD = Chord::updateOrCreate(
+        ['name' => 'D'],
+        ['pronunciation' => 'D', 'file_path' => null]
+    );
+    $existingBm = Chord::updateOrCreate(
+        ['name' => 'Bm'],
+        ['pronunciation' => 'B minor', 'file_path' => null]
+    );
+
+    $response = $this->getJson(route('songs.timeline', [
+        'song'      => $this->publicSong,
+        'transpose' => 2,
+    ]));
+
+    $response->assertOk();
+
+    // Verifikasi GenerateChordAudio tetap di-dispatch untuk chord eksisting yang belum punya audio
+    Queue::assertPushed(GenerateChordAudio::class, function (GenerateChordAudio $job) use ($existingD) {
+        return $job->chordId === $existingD->id;
+    });
+    Queue::assertPushed(GenerateChordAudio::class, function (GenerateChordAudio $job) use ($existingBm) {
+        return $job->chordId === $existingBm->id;
+    });
+});
+
 test('validasi menolak parameter transpose di luar rentang -11 sampai +11', function () {
     $this->getJson(route('songs.timeline', ['song' => $this->publicSong, 'transpose' => 12]))
         ->assertUnprocessable()

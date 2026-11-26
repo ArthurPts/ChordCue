@@ -146,7 +146,7 @@ class PronunciationGenerator
                 continue;
             }
 
-            $pattern = '/(?<!\p{L})' . preg_quote($sourceWord, '/') . '(?!\p{L})/u';
+            $pattern = '/(?<!\p{L})' . preg_quote($sourceWord, '/') . '(?!\p{L})/iu';
             $replaced = preg_replace($pattern, $replacementWord, $resultText);
             if ($replaced !== null) {
                 $resultText = $replaced;

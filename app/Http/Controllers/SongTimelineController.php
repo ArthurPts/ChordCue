@@ -10,6 +10,7 @@ use App\Services\PronunciationGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -115,9 +116,17 @@ class SongTimelineController extends Controller
                                     'pronunciation' => $pronunciation,
                                     'file_path'     => null,
                                 ]);
+                            }
+                        }
 
-                                // Antrikan job TTS hanya jika chord baru saja dibuat (§9 aturan keandalan)
+                        // Jika chord (baik yang baru dibuat maupun yang sudah ada di DB) belum memiliki audio di disk,
+                        // jalankan/antrikan pembuatan audio TTS dan muat ulang model agar file_path terbaru terbaca
+                        if ($chordModel !== null && $chordModel->audio_url === null && config('tts.enabled', true)) {
+                            try {
                                 GenerateChordAudio::dispatch($chordModel->id);
+                                $chordModel->refresh();
+                            } catch (\Throwable $exception) {
+                                Log::warning("Gagal membuat audio TTS untuk chord {$chordModel->name}: " . $exception->getMessage());
                             }
                         }
 

@@ -26,6 +26,8 @@ class GenerateChordAudio implements ShouldQueue
 
     public function __construct(public int $chordId, public bool $force = false)
     {
+        $this->tries = max(1, (int) config('tts.tries', 3));
+        $this->timeout = max(10, (int) config('tts.job_timeout', 90));
     }
 
     public function backoff(): array
@@ -69,6 +71,18 @@ class GenerateChordAudio implements ShouldQueue
         $disk->makeDirectory(dirname($relative));
         $absolute = $disk->path($relative);
 
+        if (!$this->force && is_file($absolute) && filesize($absolute) > 0) {
+            if ($chord->file_path !== $relative) {
+                DB::table('chords')->where('id', $chord->id)->update(['file_path' => $relative]);
+            }
+            return;
+        }
+
+        $jobTimeout = max(10, (int) config('tts.job_timeout', 90));
+        if (function_exists('set_time_limit')) {
+            @set_time_limit($jobTimeout);
+        }
+
         $rawText = trim($chord->pronunciation) !== '' ? $chord->pronunciation : $chord->name;
         $text = self::formatTextForTts($rawText);
 
@@ -79,14 +93,31 @@ class GenerateChordAudio implements ShouldQueue
             '--write-media', $absolute,
         ]);
 
-        $process = new Process($command);
-        $process->setEnv($this->processEnv());
-        $process->setTimeout(config('tts.timeout'));
-        $process->run();
+        $processTimeout = max(5, (int) config('tts.timeout', 60));
+        $maxAttempts = config('queue.default') === 'sync'
+            ? max(1, (int) config('tts.tries', 3))
+            : 1;
 
-        if (!$process->isSuccessful() || !is_file($absolute) || filesize($absolute) === 0) {
+        $lastErrorOutput = '';
+        $succeeded = false;
+
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            $process = new Process($command);
+            $process->setEnv($this->processEnv());
+            $process->setTimeout($processTimeout);
+            $process->run();
+
+            if ($process->isSuccessful() && is_file($absolute) && filesize($absolute) > 0) {
+                $succeeded = true;
+                break;
+            }
+
+            $lastErrorOutput = trim($process->getErrorOutput() ?: $process->getOutput());
+        }
+
+        if (!$succeeded) {
             throw new \RuntimeException(
-                "edge-tts gagal untuk chord {$chord->name}: " . trim($process->getErrorOutput() ?: $process->getOutput())
+                "edge-tts gagal untuk chord {$chord->name}: " . $lastErrorOutput
             );
         }
 

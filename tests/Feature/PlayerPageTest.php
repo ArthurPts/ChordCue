@@ -481,3 +481,27 @@ test('player menampilkan tanda "-" sebagai fallback saat artist atau default_key
     expect($fresh->artist_id)->toBeNull();
     expect($fresh->default_key)->toBeNull();
 });
+
+test('konfigurasi env timeout, tries, dan interval polling player tersinkronisasi di seluruh komponen', function () {
+    expect(config('tts.tries'))->toBe(3);
+    expect(config('tts.timeout'))->toBe(60);
+    expect(config('tts.job_timeout'))->toBe(90);
+    expect(config('chordcue.player_poll_interval_seconds'))->toBe(3);
+    expect(config('chordcue.player_poll_timeout_seconds'))->toBe(60);
+
+    config([
+        'tts.tries' => 5,
+        'tts.job_timeout' => 150,
+        'chordcue.player_poll_interval_seconds' => 4,
+        'chordcue.player_poll_timeout_seconds' => 90,
+    ]);
+
+    $job = new \App\Jobs\GenerateChordAudio(1);
+    expect($job->tries)->toBe(5);
+    expect($job->timeout)->toBe(150);
+
+    $response = $this->get(route('songs.show', $this->publicSong));
+    $response->assertOk();
+    $response->assertSee('pollIntervalSeconds: 4', false);
+    $response->assertSee('pollTimeoutSeconds: 90', false);
+});

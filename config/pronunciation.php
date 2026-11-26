@@ -175,10 +175,12 @@ return [
     |--------------------------------------------------------------------------
     | Jika tts_respelling_enabled bernilai true, pemetaan di bawah diterapkan
     | HANYA saat menghasilkan audio TTS (tidak pernah disimpan ke kolom
-    | chords.pronunciation). Nonaktif secara bawaan sampai uji dengar.
+    | chords.pronunciation maupun mengubah tampilan Pustaka Chord).
     */
-    'tts_respelling_enabled' => false,
+    'tts_respelling_enabled' => true,
 
-    'tts_respelling' => [],
+    'tts_respelling' => [
+        'aug' => 'augg',
+    ],
 
 ];

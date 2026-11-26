@@ -120,13 +120,17 @@ describe('PronunciationGenerator Service', function () {
 });
 
 describe('GenerateChordAudio TTS Text Formatter', function () {
-    test('meneruskan teks apa adanya ketika tts_respelling_enabled bernilai false (bawaan)', function () {
+    test('menerapkan respelling bawaan (aug -> augg) tanpa mengubah token lain', function () {
         expect(GenerateChordAudio::formatTextForTts('A'))->toBe('A');
         expect(GenerateChordAudio::formatTextForTts('A minor'))->toBe('A minor');
         expect(GenerateChordAudio::formatTextForTts('Cis minor'))->toBe('Cis minor');
         expect(GenerateChordAudio::formatTextForTts('C mayor tujuh'))->toBe('C mayor tujuh');
         expect(GenerateChordAudio::formatTextForTts('D sus empat'))->toBe('D sus empat');
         expect(GenerateChordAudio::formatTextForTts('G on Bes'))->toBe('G on Bes');
+        expect(GenerateChordAudio::formatTextForTts('C aug'))->toBe('C augg');
+        expect(GenerateChordAudio::formatTextForTts('C aug tujuh'))->toBe('C augg tujuh');
+        expect(GenerateChordAudio::formatTextForTts('C Aug sembilan'))->toBe('C augg sembilan');
+        expect(GenerateChordAudio::formatTextForTts('C augmented'))->toBe('C augmented');
     });
 
     test('menerapkan peta tts_respelling ketika tts_respelling_enabled bernilai true', function () {

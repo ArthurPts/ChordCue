@@ -11,6 +11,8 @@
         $cueMarginMs = (int) config('chordcue.cue_margin_ms', 1000);
         $speechSilenceThresholdDb = (float) config('chordcue.speech_silence_threshold_db', -40.0);
         $chordCueTrimMs = (int) config('chordcue.chord_cue_trim_ms', 0);
+        $playerPollIntervalSeconds = max(1, (int) config('chordcue.player_poll_interval_seconds', 3));
+        $playerPollTimeoutSeconds = max(1, (int) config('chordcue.player_poll_timeout_seconds', 60));
         $displayArtist = ($song->artist && trim((string) $song->artist->name) !== '')
             ? $song->artist->name
             : '-';
@@ -26,6 +28,8 @@
             cueMarginMs: {{ $cueMarginMs }},
             speechSilenceThresholdDb: {{ $speechSilenceThresholdDb }},
             chordCueTrimMs: {{ $chordCueTrimMs }},
+            pollIntervalSeconds: {{ $playerPollIntervalSeconds }},
+            pollTimeoutSeconds: {{ $playerPollTimeoutSeconds }},
             initialKey: @js($displayDefaultKey),
             hasInitialBackingTrack: {{ $song->backing_track_path ? 'true' : 'false' }},
             initialBackingOffset: {{ $initialOffsetFloat }},

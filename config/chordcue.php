@@ -48,4 +48,16 @@ return [
     */
     'chord_cue_trim_ms' => (int) env('CHORDCUE_CHORD_CUE_TRIM_MS', 0),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Polling Kesiapan Audio pada Halaman Player (Detik)
+    |--------------------------------------------------------------------------
+    | 'player_poll_interval_seconds': Jeda waktu (detik) halaman Player mengirim
+    |   percobaan request ke server untuk mengecek kesiapan audio chord (default 3 dtk).
+    | 'player_poll_timeout_seconds' : Batas waktu maksimal (detik) halaman Player
+    |   menunggu kesiapan audio chord sebelum menyatakan timeout (default 60 dtk).
+    */
+    'player_poll_interval_seconds' => (int) env('CHORDCUE_PLAYER_POLL_INTERVAL_SECONDS', 3),
+    'player_poll_timeout_seconds' => (int) env('CHORDCUE_PLAYER_POLL_TIMEOUT_SECONDS', 60),
+
 ];

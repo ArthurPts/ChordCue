@@ -38,8 +38,10 @@ class ServeAllCommand extends Command
 
         if (!$this->option('no-worker')) {
             // queue:listen memuat ulang kode & .env tiap job, nyaman untuk development
+            $workerTries = max(1, (int) config('tts.tries', 3));
+            $workerTimeout = max(10, (int) config('tts.job_timeout', 90));
             $this->processes['worker'] = new Process(
-                [$php, $artisan, 'queue:listen', '--tries=3', '--timeout=120', '--sleep=1'],
+                [$php, $artisan, 'queue:listen', '--tries=' . $workerTries, '--timeout=' . $workerTimeout, '--sleep=1'],
                 base_path(),
                 $childEnv
             );

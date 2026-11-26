@@ -47,11 +47,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Batas Waktu Proses (Timeout)
+    | Batas Percobaan & Waktu Proses (Tries & Timeout)
     |--------------------------------------------------------------------------
-    | Batas waktu maksimal eksekusi satu proses edge-tts dalam satuan detik.
+    | 'tries'      : Jumlah maksimal percobaan (retry) server saat generate audio
+    |                chord melalui edge-tts gagal.
+    | 'timeout'    : Batas waktu maksimal (detik) eksekusi satu proses edge-tts.
+    | 'job_timeout': Batas waktu maksimal (detik) eksekusi satu job GenerateChordAudio.
     */
+    'tries' => (int) env('TTS_TRIES', 3),
     'timeout' => (int) env('TTS_TIMEOUT', 60),
+    'job_timeout' => (int) env('TTS_JOB_TIMEOUT', 90),
 
     /*
     |--------------------------------------------------------------------------

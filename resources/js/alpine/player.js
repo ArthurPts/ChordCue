@@ -55,7 +55,9 @@ export function chordsheetPlayer(config = {}) {
         pendingChords: 0,
         preloadProgress: { loaded: 0, total: 0, percent: 0 },
 
-        // Polling Kesiapan Audio (Setiap 3 detik, maksimal 60 detik)
+        // Polling Kesiapan Audio (Interval & batas waktu tunggu dari konfigurasi .env / config/chordcue.php)
+        pollIntervalSeconds: Math.max(1, Number(config.pollIntervalSeconds ?? 3)),
+        pollTimeoutSeconds: Math.max(1, Number(config.pollTimeoutSeconds ?? 60)),
         pollingTimer: null,
         pollingSeconds: 0,
         pollingTimeoutReached: false,
@@ -342,7 +344,7 @@ export function chordsheetPlayer(config = {}) {
         },
 
         /**
-         * Memulai polling pemeriksaan kesiapan audio setiap 3 detik (maks 60 detik).
+         * Memulai polling pemeriksaan kesiapan audio sesuai interval & batas timeout konfigurasi.
          */
         startPollingAudio() {
             if (this.pollingTimer) return;
@@ -351,10 +353,13 @@ export function chordsheetPlayer(config = {}) {
             this.pollingTimeoutReached = false;
             this.updateStatusMessage();
 
-            this.pollingTimer = setInterval(async () => {
-                this.pollingSeconds += 3;
+            const intervalSec = Math.max(1, Number(this.pollIntervalSeconds || 3));
+            const timeoutSec = Math.max(intervalSec, Number(this.pollTimeoutSeconds || 60));
 
-                if (this.pollingSeconds >= 60) {
+            this.pollingTimer = setInterval(async () => {
+                this.pollingSeconds += intervalSec;
+
+                if (this.pollingSeconds >= timeoutSec) {
                     this.stopPolling();
                     this.pollingTimeoutReached = true;
                     this.updateStatusMessage();
@@ -379,7 +384,7 @@ export function chordsheetPlayer(config = {}) {
                 } catch (e) {
                     console.error('Error saat polling audio:', e);
                 }
-            }, 3000);
+            }, intervalSec * 1000);
         },
 
         /**
