@@ -31,7 +31,7 @@
                 </div>
             </div>
         @else
-            <div class="max-w-content mx-auto w-full px-16 sm:px-24 py-24 sm:py-32 pb-[88px]">
+            <div class="max-w-content mx-auto w-full px-16 sm:px-24 py-24 sm:py-32 pb-[88px] sm:pb-[88px] mb-24">
                 <!-- Header Row (Title, Subtitle & Buat Lagu Button) -->
                 <div class="flex items-center justify-between gap-12">
                     <div>

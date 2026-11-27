@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-content mx-auto w-full px-16 sm:px-24 py-24 sm:py-32 pb-[88px]">
+    <div class="max-w-content mx-auto w-full px-16 sm:px-24 py-24 sm:py-32 pb-[88px] sm:pb-[88px] mb-24">
         <!-- Hero Section: Clean & Focused Header -->
         <div class="text-center max-w-[560px] mx-auto mb-24">
             <h1 class="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight">

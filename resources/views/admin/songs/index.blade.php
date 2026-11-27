@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-content mx-auto w-full px-16 md:px-24 py-24 sm:py-32 pb-[88px]">
+    <div class="max-w-content mx-auto w-full px-16 md:px-24 py-24 sm:py-32 pb-[88px] sm:pb-[88px] mb-24">
         <!-- Header -->
         <div>
             <h1 class="text-display font-medium text-ink leading-heading">

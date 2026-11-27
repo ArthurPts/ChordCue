@@ -18,7 +18,7 @@
                 this.selectedChord = chord;
             }
         }"
-        class="min-h-screen py-24 sm:py-32 pb-[88px]"
+        class="min-h-screen py-24 sm:py-32 pb-[88px] sm:pb-[88px] mb-24"
     >
         <div class="max-w-content mx-auto px-16 sm:px-24">
             {{-- Flash Messages --}}

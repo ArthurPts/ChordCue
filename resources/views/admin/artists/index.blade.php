@@ -48,7 +48,7 @@
             },
         }"
         @keydown.escape.window="closeAll()"
-        class="max-w-content mx-auto w-full px-16 md:px-24 py-24 sm:py-32 pb-[88px]"
+        class="max-w-content mx-auto w-full px-16 md:px-24 py-24 sm:py-32 pb-[88px] sm:pb-[88px] mb-24"
     >
         <!-- Header & Primary Action -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-16">
