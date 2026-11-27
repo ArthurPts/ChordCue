@@ -6,10 +6,10 @@ Pedoman wajib bagi AI Agent setiap kali membaca, membuat, atau memodifikasi kode
 
 ## 0. Prinsip Dasar
 
-1. **Sumber kebenaran** perilaku dan data adalah `SPESIFIKASI_SISTEM_ChordCue.md`. ERD dan kamus data di §6 menentukan skema database.
+1. **Sumber kebenaran** perilaku dan data adalah `01-docs/spesifikasi/SPESIFIKASI_SISTEM_ChordCue.md`. ERD dan kamus data di §6 menentukan skema database.
 2. Jika spesifikasi ambigu atau permintaan bertentangan dengannya: **tanyakan dulu**, jangan berasumsi, dan jangan mengubah spesifikasi tanpa izin.
 3. Kerjakan **sesuai permintaan saja**; jangan menambah fitur atau merombak kode di luar itu.
-4. Sumber kebenaran **tampilan** adalah aturan visual di `.agents/rules/design-rules.md` dan panduan lengkap di `01-docs/design-system/DESIGN_GUIDE.md` (nilai token di `resources/css/tokens.css` dan `tokens.json`).
+4. Sumber kebenaran **tampilan** adalah aturan visual di `.agents/rules/design-rules.md` dan panduan lengkap di `01-docs/design-system/DESIGN_GUIDE.md` (nilai token di `resources/css/tokens.css` dan `01-docs/design-system/tokens.json`).
    Perilaku/data → spesifikasi. Tampilan → design system. Bila bertentangan: tanyakan dulu.
 
 ---
